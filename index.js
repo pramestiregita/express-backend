@@ -110,9 +110,9 @@ app.get('/items', (req, res)=>{
 
 app.put('/items/:id', (req, res)=>{
     const {id, name, price, description} = req.body
-    console.log(req.params.id);
-    if(id === req.params.id){
-        if(name && price && description){
+    console.log(req.body);
+    if(name && price && description){
+        if(id === req.params.id){
             db.query(`UPDATE items SET name = '${name}', price = ${price}, description = '${description}' WHERE id = ${req.params.id}`, (err, result, fields)=>{
                 if(!err){
                     res.status(201).send({
@@ -130,13 +130,61 @@ app.put('/items/:id', (req, res)=>{
         }else{
             res.status(400).send({
                 success: false,
-                message: 'All field must be filled!'
+                message: 'ID does not match!'
             })
         }
     }else{
         res.status(400).send({
             success: false,
-            message: 'ID does not match!'
+            message: 'All field must be filled!'
+        })
+    }
+})
+
+app.patch('/items:id', (req, res)=>{
+    const id = req.body.id
+    const name = req.body.name
+    const price = req.body.price
+    const description = req.body.description
+
+    if(name){
+        db.query(`UPDATE items SET name = '${name}' WHERE id = ${id}`, (err, result, fields)=>{
+            if(!err){
+                res.status(201).send({
+                    success: true,
+                    message: 'Item has been updated',
+                    data: req.body
+                })
+            }else{
+                console.log(err.message)
+                res.send('ERROR')
+            }
+        })
+    }else if(price){
+        db.query(`UPDATE items SET price = ${price} WHERE id = ${id}`, (err, result, fields)=>{
+            if(!err){
+                res.status(201).send({
+                    success: true,
+                    message: 'Item has been updated',
+                    data: req.body
+                })
+            }else{
+                console.log(err.message)
+                res.send('ERROR')
+            }
+        })
+    }else if(description){
+        db.query(`UPDATE items SET description = ${description} WHERE id = ${id}`, (err, result, fields)=>{
+            if(!err){
+                res.status(201).send({
+                    success: true,
+                    message: 'Item has been updated',
+                    data: req.body
+                })
+            }else{
+                console.log(err.message)
+                res.send('ERROR')
+            }
         })
     }
 })
