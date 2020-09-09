@@ -141,6 +141,50 @@ app.put('/items/:id', (req, res)=>{
     }
 })
 
+app.patch('/items/:id', (req, res)=>{
+    let updateKey = ''
+    let updateValue = ''
+    if(typeof req.body == 'object'){
+        updateKey = Object.keys(req.body)[0]
+        updateValue = Object.values(req.body)[0]
+    }
+    // console.log(req.body)
+    // console.log(updateKey)
+    // console.log(updateValue)
+
+    if(updateKey === 'name' || 'description'){
+        db.query(`UPDATE items SET ${updateKey} = '${updateValue}' WHERE id = ${req.params.id}`, (err, result, fields)=>{
+            if(!err){
+                res.status(201).send({
+                    success: true,
+                    message: 'Item has been updated',
+                    data: req.body
+                })
+            }else{
+                res.status(500).send({
+                    success: false,
+                    message: 'Internal Server Error',
+                })
+            }
+        })
+    }else if(updateKey === 'price'){
+        db.query(`UPDATE items SET ${updateKey} = ${updateValue} WHERE id = ${req.params.id}`, (err, result, fields)=>{
+            if(!err){
+                res.status(201).send({
+                    success: true,
+                    message: 'Item has been updated',
+                    data: req.body
+                })
+            }else{
+                res.status(500).send({
+                    success: false,
+                    message: 'Internal Server Error',
+                })
+            }
+        })
+    }
+})
+
 app.listen(8080, ()=>{
     console.log('App listening on port 8080')
 })
