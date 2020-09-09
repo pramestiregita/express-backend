@@ -108,6 +108,32 @@ app.get('/items', (req, res)=>{
     })
 })
 
+app.put('/items/:id', (req, res)=>{
+    const {name, price, description} = req.body
+    // console.log(req.params.id);
+    if(name && price && description){
+        db.query(`UPDATE items SET name = '${name}', price = ${price}, description = '${description}' WHERE id = ${req.params.id}`, (err, result, fields)=>{
+            if(!err){
+                res.status(201).send({
+                    success: true,
+                    message: 'Item has been updated',
+                    data: req.body
+                })
+            }else{
+                res.status(500).send({
+                    success: false,
+                    message: 'Internal Server Error',
+                })
+            }
+        })
+    }else{
+        res.status(400).send({
+            success: false,
+            message: 'All field must be filled!'
+        })
+    }
+})
+
 app.listen(8080, ()=>{
     console.log('App listening on port 8080')
 })
