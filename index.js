@@ -185,6 +185,23 @@ app.patch('/items/:id', (req, res)=>{
     }
 })
 
+app.delete('/items/:id', (req, res)=>{
+    db.query(`DELETE FROM items WHERE id = ${req.params.id}`, (err, result, fields)=>{
+        if(!err){
+            res.status(201).send({
+                success: true,
+                message: 'Item has been deleted',
+                data: req.body
+            })
+        }else{
+            res.status(500).send({
+                success: false,
+                message: 'Internal Server Error',
+            })
+        }
+    })
+})
+
 app.listen(8080, ()=>{
     console.log('App listening on port 8080')
 })
