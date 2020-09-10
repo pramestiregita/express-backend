@@ -202,6 +202,31 @@ app.delete('/items/:id', (req, res)=>{
     })
 })
 
+app.get('/items/:id', (req, res)=>{
+    const query = `SELECT * FROM items WHERE id=${req.params.id}`
+    db.query(query, (err, result, fields)=>{
+        if(!err){
+            if(result.length){
+                res.status(201).send({
+                    success: true,
+                    message: `Detail of id ${req.params.id}`,
+                    data: result
+                })
+            }else{
+                res.status(201).send({
+                    success: false,
+                    message: `There is no id ${req.params.id}`
+                })
+            }
+        }else{
+            res.status(500).send({
+                success: false,
+                message: 'Internal Server Error',
+            })
+        }
+    })
+})
+
 app.listen(8080, ()=>{
     console.log('App listening on port 8080')
 })
