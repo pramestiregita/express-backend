@@ -1,6 +1,6 @@
 const qs = require('querystring')
 
-const { createItemModel, getItemModel, searchItemModel, getDetailModel, updateItemModel, updatePartialModel, deleteItemModel } = require('../models/items')
+const { createItemModel, getItemModel, searchItemModel, getDetailModel, getSortModel, sortCountModel, updateItemModel, updatePartialModel, deleteItemModel } = require('../models/items')
 
 module.exports = {
   createItem: (req, res) => {
@@ -40,7 +40,7 @@ module.exports = {
     }
   },
   getItem: (req, res) => {
-    let { page, limit, search } = req.query
+    const { page = 1, limit = 5, search } = req.query
     let searchKey = ''
     let searchValue = ''
     if (typeof search === 'object') {
@@ -50,51 +50,80 @@ module.exports = {
       searchKey = 'name'
       searchValue = search || ''
     }
-
-    if (!limit) {
-      limit = 5
-    } else {
-      limit = parseInt(limit)
-    }
-    if (!page) {
-      page = 1
-    } else {
-      page = parseInt(page)
-    }
     const offset = (page - 1) * limit
 
+    const pageInfo = {
+      count: 0,
+      pages: 0,
+      currentPage: parseInt(page),
+      limitPerPage: parseInt(limit),
+      nextLink: null,
+      prevLink: null
+    }
+
+    const pageNext = qs.stringify({ ...req.query, ...{ page: page + 1 } })
+
+    const pagePrev = qs.stringify({ ...req.query, ...{ page: page - 1 } })
+
     getItemModel([searchKey, searchValue, limit, offset], result => {
-      const pageInfo = {
-        count: 0,
-        pages: 0,
-        currentPage: page,
-        limitPerPage: limit,
-        nextLink: null,
-        prevLink: null
-      }
       if (result.length) {
-        searchItemModel([searchKey, searchValue], data => {
-          const { count } = data[0]
-          pageInfo.count = count
-          pageInfo.pages = Math.ceil(count / limit)
+        const { sortBy, sort } = req.query
+        if (sort) {
+          getSortModel([sortBy, sort, limit, offset], result => {
+            if (result.length) {
+              sortCountModel([sortBy, sort, limit, offset], data => {
+                const { count } = data[0]
+                pageInfo.count = count
+                pageInfo.pages = Math.ceil(count / limit)
 
-          const { pages, currentPage } = pageInfo
+                const { pages, currentPage } = pageInfo
 
-          if (currentPage < pages) {
-            pageInfo.nextLink = `http://localhost:8080/items?${qs.stringify({ ...req.query, ...{ page: page + 1 } })}`
-          }
+                if (currentPage < pages) {
+                  pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
+                }
 
-          if (currentPage > 1) {
-            pageInfo.prevLink = `http://localhost:8080/items?${qs.stringify({ ...req.query, ...{ page: page - 1 } })}`
-          }
+                if (currentPage > 1) {
+                  pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
+                }
 
-          res.send({
-            success: true,
-            message: 'List of items',
-            data: result,
-            pageInfo
+                res.send({
+                  success: true,
+                  message: `Items sort by ${sortBy} ${sort}`,
+                  data: result,
+                  pageInfo
+                })
+              })
+            } else {
+              res.send({
+                success: false,
+                message: 'Failed to sorting'
+              })
+            }
           })
-        })
+        } else {
+          searchItemModel([searchKey, searchValue], data => {
+            const { count } = data[0]
+            pageInfo.count = count
+            pageInfo.pages = Math.ceil(count / limit)
+
+            const { pages, currentPage } = pageInfo
+
+            if (currentPage < pages) {
+              pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
+            }
+
+            if (currentPage > 1) {
+              pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
+            }
+
+            res.send({
+              success: true,
+              message: 'List of items',
+              data: result,
+              pageInfo
+            })
+          })
+        }
       } else {
         res.send({
           success: true,
