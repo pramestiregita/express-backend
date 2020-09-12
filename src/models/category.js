@@ -13,7 +13,6 @@ module.exports = {
     const page = `LIMIT ${arr[2]} OFFSET ${arr[3]}`
     const sort = `ORDER BY ${arr[4]} ${arr[5]}`
     const query = `SELECT * FROM ${table} ${search} ${sort} ${page}`
-    console.log(query)
     db.query(query, (_err, result, _field) => {
       cb(result)
     })

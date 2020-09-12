@@ -83,7 +83,7 @@ module.exports = {
         })
       } else {
         res.send({
-          success: true,
+          success: false,
           message: 'There is no item in list',
           pageInfo
         })

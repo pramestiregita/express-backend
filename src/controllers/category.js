@@ -105,7 +105,7 @@ module.exports = {
     const { id } = req.params
     const { category } = req.body
 
-    if (category) {
+    if (category.trim()) {
       getDetailModel(id, result => {
         if (result.length) {
           updateCategoryModel([category, id], result => {
