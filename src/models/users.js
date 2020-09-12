@@ -4,7 +4,7 @@ const table = 'users'
 module.exports = {
   createUserModels: (arr, cb) => {
     const column = 'name, email, phone_number, gender, date_of_birth'
-    const input = `'${arr[0]}', '${arr[1]}', ${arr[2]}, '${arr[3]}', '${arr[4]}'`
+    const input = `"${arr[0]}", "${arr[1]}", ${arr[2]}, '${arr[3]}', '${arr[4]}'`
     const query = `INSERT INTO ${table} (${column}) VALUES (${input})`
     db.query(query, (_err, result, _field) => {
       cb(result)
@@ -34,11 +34,11 @@ module.exports = {
     })
   },
   updateUserModel: (arr, cb) => {
-    const name = `name = '${arr[0]}'`
-    const email = `email = '${arr[1]}'`
+    const name = `name = "${arr[0]}"`
+    const email = `email = "${arr[1]}"`
     const phoneNumber = `phone_number = ${arr[2]}`
     const gender = `gender = '${arr[3]}'`
-    const dateOfBirth = `date_of_birth = '${arr[4]}'`
+    const dateOfBirth = `date_of_birth = "${arr[4]}"`
     const update = `${name}, ${email}, ${phoneNumber}, ${gender}, ${dateOfBirth}`
     const query = `UPDATE ${table} SET ${update} WHERE id = ${arr[5]}`
     db.query(query, (_err, result, _field) => {

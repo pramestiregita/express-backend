@@ -4,9 +4,9 @@ const { createItemModel, getItemModel, getCountModel, getDetailModel, updateItem
 
 module.exports = {
   createItem: (req, res) => {
-    const { name, price, description } = req.body
-    if (name && price && description) {
-      createItemModel([name, price, description], result => {
+    const { name, price, description, categoryId } = req.body
+    if (name && price && description && categoryId) {
+      createItemModel([name, price, description, categoryId], result => {
         res.status(201).send({
           success: true,
           message: 'Item has been created',
@@ -143,7 +143,12 @@ module.exports = {
   updateItemPartial: (req, res) => {
     const { id } = req.params
     const data = Object.entries(req.body).map(item => {
-      return parseInt(item[1]) > 0 ? `${item[0]}=${item[1]}` : `${item[0]}='${item[1]}'`
+      if (item[0] === 'price') {
+        const price = parseInt(item[1])
+        return `${item[0]}=${price}`
+      } else {
+        return `${item[0]}="${item[1]}"`
+      }
     })
     if (data.length) {
       getDetailModel(id, result => {

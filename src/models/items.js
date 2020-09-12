@@ -3,7 +3,7 @@ const table = 'items'
 
 module.exports = {
   createItemModel: (arr, cb) => {
-    const query = `INSERT INTO ${table} (name, price, description) VALUES ('${arr[0]}',${arr[1]},'${arr[2]}')`
+    const query = `INSERT INTO ${table} (name, price, description, category_id) VALUES ("${arr[0]}",${arr[1]},"${arr[2]}",${arr[3]})`
     db.query(query, (_err, result, _fields) => {
       cb(result)
     })
@@ -35,7 +35,7 @@ module.exports = {
     })
   },
   updateItemModel: (arr, cb) => {
-    const query = `UPDATE ${table} SET name = '${arr[0]}', price = ${arr[1]}, description = '${arr[2]}' WHERE id = ${arr[3]}`
+    const query = `UPDATE ${table} SET name = "${arr[0]}", price = ${arr[1]}, description = "${arr[2]}" WHERE id = ${arr[3]}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })

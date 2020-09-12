@@ -144,7 +144,14 @@ module.exports = {
   updateUserPartial: (req, res) => {
     const { id } = req.params
     const data = Object.entries(req.body).map(item => {
-      return parseInt(item[1]) > 0 ? `${item[0]}=${item[1]}` : `${item[0]}='${item[1]}'`
+      if (item[0] === 'phoneNumber') {
+        const number = parseInt(item[1])
+        return `phone_number=${number}`
+      } else if (item[0] === 'dateOfBirth') {
+        return `date_of_birth="${item[1]}"`
+      } else {
+        return `${item[0]}="${item[1]}"`
+      }
     })
     if (data.length) {
       getDetailModel(id, result => {

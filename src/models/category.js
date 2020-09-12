@@ -3,7 +3,7 @@ const table = 'category'
 
 module.exports = {
   createCategoryModel: (category, cb) => {
-    const query = `INSERT INTO ${table} (category_name) VALUES ('${category}')`
+    const query = `INSERT INTO ${table} (category_name) VALUES ("${category}")`
     db.query(query, (_err, result, _fields) => {
       cb(result)
     })
@@ -33,7 +33,7 @@ module.exports = {
     })
   },
   updateCategoryModel: (arr, cb) => {
-    const query = `UPDATE ${table} SET category_name = '${arr[0]}' WHERE id=${arr[1]}`
+    const query = `UPDATE ${table} SET category_name = "${arr[0]}" WHERE id=${arr[1]}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
