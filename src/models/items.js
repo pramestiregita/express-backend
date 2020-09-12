@@ -9,25 +9,19 @@ module.exports = {
     })
   },
   getItemModel: (arr, cb) => {
-    const query = `SELECT * FROM ${table} WHERE ${arr[0]} LIKE '%${arr[1]}%' LIMIT ${arr[2]} OFFSET ${arr[3]}`
+    const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
+    const page = `LIMIT ${arr[2]} OFFSET ${arr[3]}`
+    const sort = `ORDER BY ${arr[4]} ${arr[5]}`
+    const query = `SELECT * FROM ${table} ${search} ${sort} ${page}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
   },
-  searchItemModel: (arr, cb) => {
-    const query = `SELECT COUNT(*) AS count FROM ${table} WHERE ${arr[0]} LIKE '%${arr[1]}%'`
-    db.query(query, (_err, data, _field) => {
-      cb(data)
-    })
-  },
-  getSortModel: (arr, cb) => {
-    const query = `SELECT * FROM ${table} ORDER BY ${arr[0]} ${arr[1]} LIMIT ${arr[2]} OFFSET ${arr[3]}`
-    db.query(query, (_err, result, _field) => {
-      cb(result)
-    })
-  },
-  sortCountModel: (arr, cb) => {
-    const query = `SELECT COUNT(*) AS count FROM ${table} ORDER BY ${arr[0]} ${arr[1]} LIMIT ${arr[2]} OFFSET ${arr[3]}`
+  getCountModel: (arr, cb) => {
+    const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
+    const page = `LIMIT ${arr[2]} OFFSET ${arr[3]}`
+    const sort = `ORDER BY ${arr[4]} ${arr[5]}`
+    const query = `SELECT COUNT(*) as count FROM ${table} ${search} ${sort} ${page}`
     db.query(query, (_err, data, _field) => {
       cb(data)
     })
