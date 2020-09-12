@@ -9,19 +9,22 @@ module.exports = {
     })
   },
   getItemModel: (arr, cb) => {
+    const column = 'items.id, items.name, items.price, items.description, items.created_at, category.category_name'
     const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
     const page = `LIMIT ${arr[2]} OFFSET ${arr[3]}`
     const sort = `ORDER BY ${arr[4]} ${arr[5]}`
-    const query = `SELECT * FROM ${table} ${search} ${sort} ${page}`
+    const category = 'INNER JOIN category ON items.category_id=category.category_id'
+    const query = `SELECT ${column} FROM ${table} ${category} ${search} ${sort} ${page}`
+    console.log(query)
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
   },
   getCountModel: (arr, cb) => {
     const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
-    const page = `LIMIT ${arr[2]} OFFSET ${arr[3]}`
     const sort = `ORDER BY ${arr[4]} ${arr[5]}`
-    const query = `SELECT COUNT(*) as count FROM ${table} ${search} ${sort} ${page}`
+    const category = 'INNER JOIN category ON items.category_id=category.category_id'
+    const query = `SELECT COUNT(*) as count FROM ${table} ${category} ${search} ${sort}`
     db.query(query, (_err, data, _field) => {
       cb(data)
     })
