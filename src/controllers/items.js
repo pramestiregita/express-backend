@@ -1,6 +1,6 @@
 const qs = require('querystring')
 
-const { createItemModel, getItemModel, searchItemModel, getDetailModel, getSortModel, sortCountModel, updateItemModel, updatePartialModel, deleteItemModel } = require('../models/items')
+const { createItemModel, getItemModel, getCountModel, getDetailModel, updateItemModel, updatePartialModel, deleteItemModel } = require('../models/items')
 
 module.exports = {
   createItem: (req, res) => {
@@ -16,22 +16,6 @@ module.exports = {
           }
         })
       })
-      //   if (result.length) {
-      //     res.status(201).send({
-      //       success: true,
-      //       message: 'Item has been created',
-      //       data: {
-      //         id: result.insertId,
-      //         ...req.body
-      //       }
-      //     })
-      //   } else {
-      //     res.status(500).send({
-      //       success: false,
-      //       message: 'Internal Server Error'
-      //     })
-      //   }
-      // })
     } else {
       res.status(400).send({
         success: false,
@@ -40,7 +24,7 @@ module.exports = {
     }
   },
   getItem: (req, res) => {
-    const { page = 1, limit = 5, search } = req.query
+    const { page = 1, limit = 5, search, sortBy } = req.query
     let searchKey = ''
     let searchValue = ''
     if (typeof search === 'object') {
@@ -49,6 +33,15 @@ module.exports = {
     } else {
       searchKey = 'name'
       searchValue = search || ''
+    }
+    let sortByKey = ''
+    let sortByValue = ''
+    if (typeof sortBy === 'object') {
+      sortByKey = Object.keys(sortBy)[0]
+      sortByValue = Object.values(sortBy)[0]
+    } else {
+      sortByKey = 'name'
+      sortByValue = sortBy || 'asc'
     }
     const offset = (page - 1) * limit
 
@@ -62,68 +55,32 @@ module.exports = {
     }
 
     const pageNext = qs.stringify({ ...req.query, ...{ page: page + 1 } })
-
     const pagePrev = qs.stringify({ ...req.query, ...{ page: page - 1 } })
 
-    getItemModel([searchKey, searchValue, limit, offset], result => {
+    getItemModel([searchKey, searchValue, limit, offset, sortByKey, sortByValue], result => {
       if (result.length) {
-        const { sortBy, sort } = req.query
-        if (sort) {
-          getSortModel([sortBy, sort, limit, offset], result => {
-            if (result.length) {
-              sortCountModel([sortBy, sort, limit, offset], data => {
-                const { count } = data[0]
-                pageInfo.count = count
-                pageInfo.pages = Math.ceil(count / limit)
+        getCountModel([searchKey, searchValue, limit, offset, sortByKey, sortByValue], data => {
+          const { count } = data[0]
+          pageInfo.count = count
+          pageInfo.pages = Math.ceil(count / limit)
 
-                const { pages, currentPage } = pageInfo
+          const { pages, currentPage } = pageInfo
 
-                if (currentPage < pages) {
-                  pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
-                }
+          if (currentPage < pages) {
+            pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
+          }
 
-                if (currentPage > 1) {
-                  pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
-                }
+          if (currentPage > 1) {
+            pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
+          }
 
-                res.send({
-                  success: true,
-                  message: `Items sort by ${sortBy} ${sort}`,
-                  data: result,
-                  pageInfo
-                })
-              })
-            } else {
-              res.send({
-                success: false,
-                message: 'Failed to sorting'
-              })
-            }
+          res.send({
+            success: true,
+            message: 'List of items',
+            data: result,
+            pageInfo
           })
-        } else {
-          searchItemModel([searchKey, searchValue], data => {
-            const { count } = data[0]
-            pageInfo.count = count
-            pageInfo.pages = Math.ceil(count / limit)
-
-            const { pages, currentPage } = pageInfo
-
-            if (currentPage < pages) {
-              pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
-            }
-
-            if (currentPage > 1) {
-              pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
-            }
-
-            res.send({
-              success: true,
-              message: 'List of items',
-              data: result,
-              pageInfo
-            })
-          })
-        }
+        })
       } else {
         res.send({
           success: true,
