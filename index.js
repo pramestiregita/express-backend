@@ -3,6 +3,7 @@ const bodyParser = require('body-parser')
 const itemsRouter = require('./src/routes/items')
 const categoryRouter = require('./src/routes/category')
 const usersRouter = require('./src/routes/users')
+const cartRouter = require('./src/routes/cart')
 
 const app = express()
 
@@ -11,6 +12,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use('/items', itemsRouter)
 app.use('/category', categoryRouter)
 app.use('/users', usersRouter)
+app.use('/cart', cartRouter)
 
 app.listen(8080, () => {
   console.log('App listening on port 8080')
