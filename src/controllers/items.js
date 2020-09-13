@@ -59,7 +59,7 @@ module.exports = {
 
     getItemModel([searchKey, searchValue, limit, offset, sortByKey, sortByValue], result => {
       if (result.length) {
-        getCountModel([searchKey, searchValue, limit, offset, sortByKey, sortByValue], data => {
+        getCountModel([searchKey, searchValue, sortByKey, sortByValue], data => {
           const { count } = data[0]
           pageInfo.count = count
           pageInfo.pages = Math.ceil(count / limit)

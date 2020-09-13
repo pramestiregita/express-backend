@@ -1,6 +1,6 @@
 const qs = require('querystring')
 
-const { createUserModels, getUsersModel, getCountModel, getDetailModel, updateUserModel, updatePartialModel, deleteUserModel } = require('../models/users')
+const { createUserModels, getUsersModel, getCountModel, getDetailUserModel, updateUserModel, updatePartialModel, deleteUserModel } = require('../models/users')
 
 module.exports = {
   createUser: (req, res) => {
@@ -93,7 +93,7 @@ module.exports = {
   },
   getDetailUser: (req, res) => {
     const { id } = req.params
-    getDetailModel(id, result => {
+    getDetailUserModel(id, result => {
       if (result.length) {
         res.status(201).send({
           success: true,
@@ -112,7 +112,7 @@ module.exports = {
     const { id } = req.params
     const { name, email, phoneNumber, gender, dateOfBirth } = req.body
     if (name.trim() && email.trim() && phoneNumber.trim() && gender.trim() && dateOfBirth.trim()) {
-      getDetailModel(id, result => {
+      getDetailUserModel(id, result => {
         if (result.length) {
           updateUserModel([name, email, phoneNumber, gender, dateOfBirth, id], result => {
             if (result.affectedRows) {
@@ -154,7 +154,7 @@ module.exports = {
       }
     })
     if (data.length) {
-      getDetailModel(id, result => {
+      getDetailUserModel(id, result => {
         if (result.length) {
           updatePartialModel([data, id], result => {
             if (result.affectedRows) {
@@ -185,7 +185,7 @@ module.exports = {
   },
   deleteUser: (req, res) => {
     const { id } = req.params
-    getDetailModel(id, result => {
+    getDetailUserModel(id, result => {
       if (result.length) {
         deleteUserModel(id, result => {
           if (result.affectedRows) {

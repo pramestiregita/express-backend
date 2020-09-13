@@ -27,7 +27,7 @@ module.exports = {
       cb(data)
     })
   },
-  getDetailModel: (id, cb) => {
+  getDetailUserModel: (id, cb) => {
     const query = `SELECT * FROM ${table} WHERE id=${id}`
     db.query(query, (_err, result, _fields) => {
       cb(result)

@@ -21,7 +21,7 @@ module.exports = {
   },
   getCountModel: (arr, cb) => {
     const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
-    const sort = `ORDER BY ${arr[4]} ${arr[5]}`
+    const sort = `ORDER BY ${arr[2]} ${arr[3]}`
     const category = 'INNER JOIN category ON items.category_id=category.category_id'
     const query = `SELECT COUNT(*) as count FROM ${table} ${category} ${search} ${sort}`
     db.query(query, (_err, data, _field) => {
