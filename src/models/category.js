@@ -27,7 +27,8 @@ module.exports = {
     })
   },
   getDetailModel: (id, cb) => {
-    const query = `SELECT * FROM ${table} WHERE id=${id}`
+    // const query = `SELECT * FROM ${table} WHERE id=${id}`
+    const query = `SELECT category.category_id, category.category_name, items.name, items.price, items.description FROM ${table} LEFT JOIN items ON category.category_id=items.category_id WHERE category.category_id=${id}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
