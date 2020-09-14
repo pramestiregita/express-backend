@@ -3,13 +3,13 @@ const table = 'cart'
 
 module.exports = {
   createCartModel: (arr, cb) => {
-    const query = `INSERT INTO ${table} (user_id, item_id) VALUES (${arr[0]},${arr[1]})`
+    const query = `INSERT INTO ${table} (user_id, item_id, quantity) VALUES (${arr[0]},${arr[1]},${arr[2]})`
     db.query(query, (_err, result, _fields) => {
       cb(result)
     })
   },
   getCartModel: (arr, cb) => {
-    const column = 'cart.id, cart.user_id, users.name AS user_name, items.name AS item_name, items.price'
+    const column = 'cart.id, cart.user_id, users.name AS user_name, items.name AS item_name, cart.quantity, items.price, cart.quantity*items.price AS total'
     const user = 'cart.user_id=users.id'
     const item = 'cart.item_id=items.id'
     const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
@@ -28,12 +28,27 @@ module.exports = {
       cb(data)
     })
   },
-  getDetailCartModel: (id, cb) => {
-    const column = 'cart.id, cart.user_id, users.name AS user_name, items.name AS item_name, items.price'
+  getDetailUserCartModel: (id, cb) => {
+    const column = 'cart.id, cart.user_id, users.name AS user_name, items.name AS item_name, cart.quantity, items.price, cart.quantity*items.price AS total'
     const user = 'cart.user_id=users.id'
     const item = 'cart.item_id=items.id'
     const query = `SELECT ${column} FROM ${table} LEFT JOIN users ON ${user} LEFT JOIN items ON ${item} WHERE user_id=${id}`
     db.query(query, (_err, result, _field) => {
+      cb(result)
+    })
+  },
+  getDetailCartModel: (id, cb) => {
+    const column = 'cart.id, cart.user_id, users.name AS user_name, items.name AS item_name, cart.quantity, items.price, cart.quantity*items.price AS total'
+    const user = 'cart.user_id=users.id'
+    const item = 'cart.item_id=items.id'
+    const query = `SELECT ${column} FROM ${table} LEFT JOIN users ON ${user} LEFT JOIN items ON ${item} WHERE cart.id=${id}`
+    db.query(query, (_err, result, _field) => {
+      cb(result)
+    })
+  },
+  updateQuantityModel: (arr, cb) => {
+    const query = `UPDATE ${table} SET quantity=${arr[0]} WHERE id = ${arr[1]}`
+    db.query(query, (_err, result, _fields) => {
       cb(result)
     })
   },

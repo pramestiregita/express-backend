@@ -1,11 +1,12 @@
 const { Router } = require('express')
-const { createCart, getCart, getDetailCart, deleteCart } = require('../controllers/cart')
+const { createCart, getCart, getDetailUserCart, updateQuantity, deleteCart } = require('../controllers/cart')
 
 const router = Router()
 
 router.post('/', createCart)
 router.get('/', getCart)
-router.get('/:id', getDetailCart)
+router.get('/:id', getDetailUserCart)
+router.patch('/:id', updateQuantity)
 router.delete('/:id', deleteCart)
 
 module.exports = router

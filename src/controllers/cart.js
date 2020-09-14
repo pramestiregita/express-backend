@@ -1,19 +1,19 @@
 const qs = require('querystring')
 
-const { createCartModel, getCartModel, getCartCountModel, getDetailCartModel, deleteCartModel } = require('../models/cart')
+const { createCartModel, getCartModel, getCartCountModel, getDetailUserCartModel, getDetailCartModel, updateQuantityModel, deleteCartModel } = require('../models/cart')
 const { getDetailUserModel } = require('../models/users')
 const { getDetailModel } = require('../models/items')
 
 module.exports = {
   createCart: (req, res) => {
-    const { userId, itemId } = req.body
+    const { userId, itemId, quantity } = req.body
 
-    if (userId && itemId) {
+    if (userId && itemId && quantity) {
       getDetailUserModel(userId, result => {
         if (result.length) {
           getDetailModel(itemId, result => {
             if (result.length) {
-              createCartModel([userId, itemId], result => {
+              createCartModel([userId, itemId, quantity], result => {
                 res.send({
                   success: true,
                   message: 'Cart has been created',
@@ -111,9 +111,9 @@ module.exports = {
       }
     })
   },
-  getDetailCart: (req, res) => {
+  getDetailUserCart: (req, res) => {
     const { id } = req.params
-    getDetailCartModel(id, result => {
+    getDetailUserCartModel(id, result => {
       if (result.length) {
         res.status(201).send({
           success: true,
@@ -124,6 +124,57 @@ module.exports = {
         res.status(201).send({
           success: false,
           message: `Cart with user id ${id} is not found`
+        })
+      }
+    })
+  },
+  updateQuantity: (req, res) => {
+    const { id } = req.params
+    const { quantity } = req.body
+    const data = parseInt(quantity)
+    console.log(data)
+    getDetailCartModel(id, result => {
+      if (result.length) {
+        if (quantity) {
+          if (data > 0) {
+            updateQuantityModel([data, id], result => {
+              if (result.affectedRows) {
+                res.status(201).send({
+                  success: true,
+                  message: `Cart with id ${id} has been updated`
+                })
+              } else {
+                res.status(500).send({
+                  success: false,
+                  message: 'Failed to update cart'
+                })
+              }
+            })
+          } else {
+            deleteCartModel(id, result => {
+              if (result.affectedRows) {
+                res.status(201).send({
+                  success: true,
+                  message: `Cart with id ${id} has been deleted`
+                })
+              } else {
+                res.status(500).send({
+                  success: false,
+                  message: 'Failed to delete cart'
+                })
+              }
+            })
+          }
+        } else {
+          res.send({
+            success: false,
+            message: 'Please insert quantity'
+          })
+        }
+      } else {
+        res.send({
+          success: false,
+          message: `Cart with id ${id} is not found`
         })
       }
     })
