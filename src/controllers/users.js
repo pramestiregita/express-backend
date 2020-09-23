@@ -5,15 +5,21 @@ const { createUserModels, getUsersModel, getCountModel, getDetailUserModel, upda
 module.exports = {
   createUser: (req, res) => {
     const { name, email, phoneNumber, gender, dateOfBirth } = req.body
+    const picture = `/uploads/${req.file.filename}`
 
     if (name && email && phoneNumber && gender && dateOfBirth) {
-      createUserModels([name, email, phoneNumber, gender, dateOfBirth], result => {
+      createUserModels([name, email, phoneNumber, gender, dateOfBirth, picture], result => {
         res.send({
           success: true,
           message: 'User has been created',
           data: {
             id: result.insertId,
-            ...req.body
+            name: name,
+            email: email,
+            phone_number: phoneNumber,
+            gender: gender,
+            date_of_birth: dateOfBirth,
+            picture: picture
           }
         })
       })

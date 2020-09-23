@@ -3,8 +3,8 @@ const table = 'users'
 
 module.exports = {
   createUserModels: (arr, cb) => {
-    const column = 'name, email, phone_number, gender, date_of_birth'
-    const input = `"${arr[0]}", "${arr[1]}", ${arr[2]}, '${arr[3]}', '${arr[4]}'`
+    const column = 'name, email, phone_number, gender, date_of_birth, picture'
+    const input = `"${arr[0]}", "${arr[1]}", ${arr[2]}, '${arr[3]}', '${arr[4]}', '${arr[5]}'`
     const query = `INSERT INTO ${table} (${column}) VALUES (${input})`
     db.query(query, (_err, result, _field) => {
       cb(result)

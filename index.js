@@ -9,6 +9,9 @@ const cartRouter = require('./src/routes/cart')
 
 const app = express()
 
+// provide static files
+app.use('/uploads', express.static('assets/uploads/'))
+
 // middleware
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors())
