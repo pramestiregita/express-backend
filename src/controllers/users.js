@@ -25,7 +25,7 @@ module.exports = {
     }
   },
   getUsers: (req, res) => {
-    const { page = 1, limit = 10, search, sortBy } = req.query
+    const { page = 1, limit = 5, search, sortBy } = req.query
     let searchKey = ''
     let searchValue = ''
     if (typeof search === 'object') {
@@ -68,11 +68,11 @@ module.exports = {
           const { pages, currentPage } = pageInfo
 
           if (currentPage < pages) {
-            pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
+            pageInfo.nextLink = `${process.env.APP_URL}items?${pageNext}`
           }
 
           if (currentPage > 1) {
-            pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
+            pageInfo.prevLink = `${process.env.APP_URL}items?${pagePrev}`
           }
 
           res.send({
