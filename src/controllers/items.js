@@ -1,6 +1,6 @@
 const qs = require('querystring')
 
-const { createItemModel, getItemModel, getCountModel, getDetailModel, updateItemModel, updatePartialModel, deleteItemModel } = require('../models/items')
+const { createItemModel, getItemModel, getCountModel, getDetailModel, updateItemModel, updatePartialModel, deleteItemModel, getAllItemModel } = require('../models/items')
 
 module.exports = {
   createItem: (req, res) => {
@@ -24,7 +24,7 @@ module.exports = {
     }
   },
   getItem: (req, res) => {
-    const { page = 1, limit = 5, search, sortBy } = req.query
+    const { page = 1, limit, search, sortBy } = req.query
     let searchKey = ''
     let searchValue = ''
     if (typeof search === 'object') {
@@ -41,7 +41,10 @@ module.exports = {
       sortByValue = Object.values(sortBy)[0]
     } else {
       sortByKey = 'name'
-      sortByValue = sortBy || 'asc'
+      sortByValue = sortBy || ''
+    }
+    if (limit) {
+      parseInt(limit)
     }
     const offset = (page - 1) * limit
 
@@ -57,38 +60,67 @@ module.exports = {
     const pageNext = qs.stringify({ ...req.query, ...{ page: page + 1 } })
     const pagePrev = qs.stringify({ ...req.query, ...{ page: page - 1 } })
 
-    getItemModel([searchKey, searchValue, limit, offset, sortByKey, sortByValue], result => {
-      if (result.length) {
-        getCountModel([searchKey, searchValue, sortByKey, sortByValue], data => {
-          const { count } = data[0]
-          pageInfo.count = count
-          pageInfo.pages = Math.ceil(count / limit)
+    if (limit === undefined) {
+      getAllItemModel([searchKey, searchValue], result => {
+        if (result.length) {
+          getCountModel([searchKey, searchValue, sortByKey, sortByValue], data => {
+            const { count } = data[0]
+            pageInfo.count = count
+            pageInfo.pages = Math.ceil(count / limit) === 'null' || 1
 
-          const { pages, currentPage } = pageInfo
+            const { pages, currentPage } = pageInfo
 
-          if (currentPage < pages) {
-            pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
-          }
+            if (currentPage < pages) {
+              pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
+            }
 
-          if (currentPage > 1) {
-            pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
-          }
+            if (currentPage > 1) {
+              pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
+            }
 
+            res.send({
+              success: true,
+              message: 'List of items',
+              data: result,
+              pageInfo
+            })
+          })
+        }
+      })
+    } else {
+      getItemModel([searchKey, searchValue, parseInt(limit), parseInt(offset), sortByKey, sortByValue], result => {
+        if (result.length) {
+          getCountModel([searchKey, searchValue, sortByKey, sortByValue], data => {
+            const { count } = data[0]
+            pageInfo.count = count
+            pageInfo.pages = Math.ceil(count / limit)
+
+            const { pages, currentPage } = pageInfo
+
+            if (currentPage < pages) {
+              pageInfo.nextLink = `http://localhost:8080/items?${pageNext}`
+            }
+
+            if (currentPage > 1) {
+              pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
+            }
+
+            res.send({
+              success: true,
+              message: 'List of items',
+              data: result,
+              pageInfo
+            })
+          })
+        } else {
           res.send({
-            success: true,
-            message: 'List of items',
-            data: result,
+            success: false,
+            message: 'There is no item in list',
             pageInfo
           })
-        })
-      } else {
-        res.send({
-          success: false,
-          message: 'There is no item in list',
-          pageInfo
-        })
-      }
-    })
+        }
+      })
+    }
   },
   getDetailItem: (req, res) => {
     const { id } = req.params
@@ -109,11 +141,11 @@ module.exports = {
   },
   updateItem: (req, res) => {
     const { id } = req.params
-    const { name, price, description } = req.body
-    if (name.trim() && price.trim() && description.trim()) {
+    const { name, price, description, categoryId } = req.body
+    if (name.trim() && price.trim() && description.trim() && categoryId.trim()) {
       getDetailModel(id, result => {
         if (result.length) {
-          updateItemModel([name, price, description, id], result => {
+          updateItemModel([name, price, description, categoryId, id], result => {
             if (result.affectedRows) {
               res.status(201).send({
                 success: true,
@@ -144,8 +176,11 @@ module.exports = {
     const { id } = req.params
     const data = Object.entries(req.body).map(item => {
       if (item[0] === 'price') {
-        const price = parseInt(item[1])
-        return `${item[0]}=${price}`
+        const number = parseInt(item[1])
+        return `${item[0]}=${number}`
+      } else if (item[0] === 'categoryId') {
+        const number = parseInt(item[1])
+        return `category_id=${number}`
       } else {
         return `${item[0]}="${item[1]}"`
       }

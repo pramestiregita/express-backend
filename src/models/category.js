@@ -27,20 +27,19 @@ module.exports = {
     })
   },
   getDetailModel: (id, cb) => {
-    // const query = `SELECT * FROM ${table} WHERE id=${id}`
     const query = `SELECT category.category_id, category.category_name, items.name, items.price, items.description FROM ${table} LEFT JOIN items ON category.category_id=items.category_id WHERE category.category_id=${id}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
   },
   updateCategoryModel: (arr, cb) => {
-    const query = `UPDATE ${table} SET category_name = "${arr[0]}" WHERE id=${arr[1]}`
+    const query = `UPDATE ${table} SET category_name = "${arr[0]}" WHERE category_id=${arr[1]}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
   },
   deleteCategoryModel: (id, cb) => {
-    const query = `DELETE FROM ${table} WHERE id=${id}`
+    const query = `DELETE FROM ${table} WHERE category_id=${id}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })

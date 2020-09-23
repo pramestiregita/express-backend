@@ -46,8 +46,11 @@ module.exports = {
     })
   },
   updatePartialModel: (arr, cb) => {
-    const query = `UPDATE ${table} SET ${arr[0]} WHERE id = ${arr[1]}`
-    db.query(query, (_err, result, _fields) => {
+    const query = `UPDATE ${table} SET ${arr[0]} WHERE id=${arr[1]}`
+    console.log(query)
+    db.query(query, (err, result, _fields) => {
+      console.log(result)
+      console.log(err)
       cb(result)
     })
   },

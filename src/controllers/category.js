@@ -25,7 +25,7 @@ module.exports = {
     }
   },
   getCategory: (req, res) => {
-    const { page = 1, limit = 5, search, sortBy } = req.query
+    const { page = 1, limit = 50, search, sortBy } = req.query
     const searchKey = 'category_name'
     const searchValue = search || ''
     let sortByKey = ''
@@ -34,7 +34,7 @@ module.exports = {
       sortByKey = Object.keys(sortBy)[0]
       sortByValue = Object.values(sortBy)[0]
     } else {
-      sortByKey = 'category_id'
+      sortByKey = 'category_name'
       sortByValue = sortBy || 'asc'
     }
     const offset = (page - 1) * limit
@@ -88,10 +88,19 @@ module.exports = {
 
     getDetailModel(id, result => {
       if (result.length) {
+        const data = result.map(item => {
+          return {
+            name: item.name,
+            price: item.price,
+            description: item.description
+          }
+        })
         res.send({
           success: true,
-          message: `Detail of id ${id}`,
-          data: result
+          message: 'Detail Category',
+          category_id: result[0].category_id,
+          category_name: result[0].category_name,
+          data: data
         })
       } else {
         res.send({

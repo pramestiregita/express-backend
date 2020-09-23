@@ -25,7 +25,7 @@ module.exports = {
     }
   },
   getUsers: (req, res) => {
-    const { page = 1, limit = 5, search, sortBy } = req.query
+    const { page = 1, limit = 10, search, sortBy } = req.query
     let searchKey = ''
     let searchValue = ''
     if (typeof search === 'object') {
@@ -41,7 +41,7 @@ module.exports = {
       sortByKey = Object.keys(sortBy)[0]
       sortByValue = Object.values(sortBy)[0]
     } else {
-      sortByKey = 'name'
+      sortByKey = 'id'
       sortByValue = sortBy || 'asc'
     }
     const offset = (page - 1) * limit
@@ -77,7 +77,7 @@ module.exports = {
 
           res.send({
             success: true,
-            message: 'List of items',
+            message: 'List of users',
             data: result,
             pageInfo
           })
@@ -85,7 +85,7 @@ module.exports = {
       } else {
         res.send({
           success: false,
-          message: 'There is no item in list',
+          message: 'There is no users in list',
           pageInfo
         })
       }

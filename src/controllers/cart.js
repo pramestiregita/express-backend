@@ -132,7 +132,6 @@ module.exports = {
     const { id } = req.params
     const { quantity } = req.body
     const data = parseInt(quantity)
-    console.log(data)
     getDetailCartModel(id, result => {
       if (result.length) {
         if (quantity) {

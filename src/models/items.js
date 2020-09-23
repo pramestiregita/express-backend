@@ -8,13 +8,22 @@ module.exports = {
       cb(result)
     })
   },
+  getAllItemModel: (arr, cb) => {
+    const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
+    const category = 'INNER JOIN category ON items.category_id=category.category_id'
+    const query = `SELECT * FROM ${table} ${category} ${search}`
+    db.query(query, (_err, result, _field) => {
+      cb(result)
+    })
+  },
   getItemModel: (arr, cb) => {
-    const column = 'items.id, items.name, items.price, items.description, items.created_at, category.category_name'
+    const column = 'items.id, items.name, items.price, items.description, items.created_at, category.category_id, category.category_name'
     const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
     const page = `LIMIT ${arr[2]} OFFSET ${arr[3]}`
     const sort = `ORDER BY ${arr[4]} ${arr[5]}`
     const category = 'INNER JOIN category ON items.category_id=category.category_id'
     const query = `SELECT ${column} FROM ${table} ${category} ${search} ${sort} ${page}`
+    console.log(query)
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
@@ -29,13 +38,15 @@ module.exports = {
     })
   },
   getDetailModel: (id, cb) => {
-    const query = `SELECT * FROM ${table} WHERE id=${id}`
+    const column = 'items.id, items.name, items.price, items.description, items.created_at, category.category_id, category.category_name'
+    const category = 'INNER JOIN category ON items.category_id=category.category_id'
+    const query = `SELECT ${column} FROM ${table} ${category} WHERE id=${id}`
     db.query(query, (_err, result, _fields) => {
       cb(result)
     })
   },
   updateItemModel: (arr, cb) => {
-    const query = `UPDATE ${table} SET name = "${arr[0]}", price = ${arr[1]}, description = "${arr[2]}" WHERE id = ${arr[3]}`
+    const query = `UPDATE ${table} SET name = "${arr[0]}", price = ${arr[1]}, description = "${arr[2]}", category_id = ${arr[3]} WHERE id = ${arr[4]}`
     db.query(query, (_err, result, _field) => {
       cb(result)
     })
