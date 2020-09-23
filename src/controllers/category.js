@@ -1,4 +1,5 @@
 const qs = require('querystring')
+const responseStandard = require('../helpers/response')
 
 const { createCategoryModel, getCategoryModel, countCategoryModel, getDetailModel, updateCategoryModel, deleteCategoryModel } = require('../models/category')
 
@@ -8,20 +9,14 @@ module.exports = {
 
     if (category) {
       createCategoryModel(category, result => {
-        res.send({
-          success: true,
-          message: 'Category has been created',
-          data: {
-            id: result.insertId,
-            ...req.body
-          }
-        })
+        const data = {
+          id: result.insertId,
+          category_name: category
+        }
+        return responseStandard(res, 201, 'Category has been created', { data })
       })
     } else {
-      res.send({
-        success: false,
-        message: 'Please enter category name'
-      })
+      return responseStandard(res, 400, 'Please enter category name', {}, false)
     }
   },
   getCategory: (req, res) => {
@@ -68,18 +63,10 @@ module.exports = {
             pageInfo.prevLink = `http://localhost:8080/category?${pagePrev}`
           }
 
-          res.send({
-            success: true,
-            message: 'List of Category',
-            data: result,
-            pageInfo
-          })
+          return responseStandard(res, 200, 'List of Category', { data: result, pageInfo })
         })
       } else {
-        res.send({
-          success: false,
-          message: 'There is no category in list'
-        })
+        return responseStandard(res, 404, 'There is no category in list', {}, false)
       }
     })
   },
@@ -88,25 +75,21 @@ module.exports = {
 
     getDetailModel(id, result => {
       if (result.length) {
-        const data = result.map(item => {
+        const item = result.map(item => {
           return {
             name: item.name,
             price: item.price,
             description: item.description
           }
         })
-        res.send({
-          success: true,
-          message: 'Detail Category',
+        const data = {
           category_id: result[0].category_id,
           category_name: result[0].category_name,
-          data: data
-        })
+          items: item
+        }
+        return responseStandard(res, 200, 'Detail of Category', { data })
       } else {
-        res.send({
-          success: false,
-          message: `Category with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `Category with id ${id} is not found`, {}, false)
       }
     })
   },
@@ -119,29 +102,17 @@ module.exports = {
         if (result.length) {
           updateCategoryModel([category, id], result => {
             if (result.affectedRows) {
-              res.send({
-                success: true,
-                message: `Category with id ${id} has been updated`
-              })
+              return responseStandard(res, 200, `Category with id ${id} has been updated`)
             } else {
-              res.send({
-                success: false,
-                message: `Failed to update category with id ${id}`
-              })
+              return responseStandard(res, 400, `Failed to update category with id ${id}`, {}, false)
             }
           })
         } else {
-          res.send({
-            success: false,
-            message: `There is no category with id ${id}`
-          })
+          return responseStandard(res, 404, `There is no category with id ${id}`, {}, false)
         }
       })
     } else {
-      res.send({
-        success: false,
-        message: 'Please enter category name'
-      })
+      return responseStandard(res, 400, 'Please enter category name', {}, false)
     }
   },
   deleteCategory: (req, res) => {
@@ -151,22 +122,13 @@ module.exports = {
       if (result.length) {
         deleteCategoryModel(id, result => {
           if (result.affectedRows) {
-            res.send({
-              success: true,
-              message: `Category with id ${id} has been deleted`
-            })
+            return responseStandard(res, 200, `Category with id ${id} has been deleted`)
           } else {
-            res.send({
-              success: false,
-              message: `Failed to delete category with id ${id}`
-            })
+            return responseStandard(res, 500, `Failed to delete category with id ${id}`, {}, false)
           }
         })
       } else {
-        res.send({
-          success: false,
-          message: `Category with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `Category with id ${id} is not found`, {}, false)
       }
     })
   }

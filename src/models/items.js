@@ -23,7 +23,6 @@ module.exports = {
     const sort = `ORDER BY ${arr[4]} ${arr[5]}`
     const category = 'INNER JOIN category ON items.category_id=category.category_id'
     const query = `SELECT ${column} FROM ${table} ${category} ${search} ${sort} ${page}`
-    console.log(query)
     db.query(query, (_err, result, _field) => {
       cb(result)
     })

@@ -1,4 +1,5 @@
 const qs = require('querystring')
+const responseStandard = require('../helpers/response')
 
 const { createItemModel, getItemModel, getCountModel, getDetailModel, updateItemModel, updatePartialModel, deleteItemModel, getAllItemModel } = require('../models/items')
 
@@ -7,20 +8,17 @@ module.exports = {
     const { name, price, description, categoryId } = req.body
     if (name && price && description && categoryId) {
       createItemModel([name, price, description, categoryId], result => {
-        res.status(201).send({
-          success: true,
-          message: 'Item has been created',
-          data: {
-            id: result.insertId,
-            ...req.body
-          }
-        })
+        const data = {
+          id: result.insertId,
+          name,
+          price,
+          description,
+          category_id: categoryId
+        }
+        return responseStandard(res, 201, 'Item has been created', { data })
       })
     } else {
-      res.status(400).send({
-        success: false,
-        message: 'All field must be filled!'
-      })
+      return responseStandard(res, 400, 'All fields must be filled', {}, false)
     }
   },
   getItem: (req, res) => {
@@ -78,12 +76,7 @@ module.exports = {
               pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
             }
 
-            res.send({
-              success: true,
-              message: 'List of items',
-              data: result,
-              pageInfo
-            })
+            return responseStandard(res, 200, 'List of items', { data: result, pageInfo })
           })
         }
       })
@@ -105,19 +98,10 @@ module.exports = {
               pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
             }
 
-            res.send({
-              success: true,
-              message: 'List of items',
-              data: result,
-              pageInfo
-            })
+            return responseStandard(res, 200, 'List of items', { data: result, pageInfo })
           })
         } else {
-          res.send({
-            success: false,
-            message: 'There is no item in list',
-            pageInfo
-          })
+          return responseStandard(res, 404, 'There is no item in list', {}, false)
         }
       })
     }
@@ -126,16 +110,9 @@ module.exports = {
     const { id } = req.params
     getDetailModel(id, result => {
       if (result.length) {
-        res.status(201).send({
-          success: true,
-          message: `Detail of id ${id}`,
-          data: result
-        })
+        return responseStandard(res, 200, `Detail of id ${id}`, { data: result })
       } else {
-        res.status(201).send({
-          success: false,
-          message: `Item with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `Item with id ${id} is not found`, {}, false)
       }
     })
   },
@@ -147,29 +124,17 @@ module.exports = {
         if (result.length) {
           updateItemModel([name, price, description, categoryId, id], result => {
             if (result.affectedRows) {
-              res.status(201).send({
-                success: true,
-                message: `Item with id ${id} has been updated`
-              })
+              return responseStandard(res, 200, `Item with id ${id} has been updated`)
             } else {
-              res.status(500).send({
-                success: false,
-                message: 'Failed to update'
-              })
+              return responseStandard(res, 304, 'Failed to update', {}, false)
             }
           })
         } else {
-          res.status(500).send({
-            success: false,
-            message: `Item with id ${id} is not found`
-          })
+          return responseStandard(res, 404, `Item with id ${id} is not found`, {}, false)
         }
       })
     } else {
-      res.status(500).send({
-        success: false,
-        message: 'All fields must be filled'
-      })
+      return responseStandard(res, 400, 'All fields must be filled', {}, false)
     }
   },
   updateItemPartial: (req, res) => {
@@ -190,29 +155,17 @@ module.exports = {
         if (result.length) {
           updatePartialModel([data, id], result => {
             if (result.affectedRows) {
-              res.send({
-                success: true,
-                message: `Item with id ${id} has been updated`
-              })
+              return responseStandard(res, 200, `Item with id ${id} has been updated`)
             } else {
-              res.send({
-                success: false,
-                message: 'Failed to update'
-              })
+              return responseStandard(res, 304, 'Failed to update', {}, false)
             }
           })
         } else {
-          res.send({
-            success: false,
-            message: `Item with id ${id} is not found`
-          })
+          return responseStandard(res, 404, `Item with id ${id} is not found`, {}, false)
         }
       })
     } else {
-      res.send({
-        success: false,
-        message: 'At least 1 field must be filled'
-      })
+      return responseStandard(res, 400, 'At least 1 field must be filled', {}, false)
     }
   },
   deleteItem: (req, res) => {
@@ -221,22 +174,13 @@ module.exports = {
       if (result.length) {
         deleteItemModel(id, result => {
           if (result.affectedRows) {
-            res.status(201).send({
-              success: true,
-              message: 'Item has been deleted'
-            })
+            return responseStandard(res, 200, 'Item has been deleted')
           } else {
-            res.status(500).send({
-              success: false,
-              message: 'Failed to delete item'
-            })
+            return responseStandard(res, 500, 'Failed to delete item', {}, false)
           }
         })
       } else {
-        res.send({
-          success: false,
-          message: `Item with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `Item with id ${id} is not found`, {}, false)
       }
     })
   }

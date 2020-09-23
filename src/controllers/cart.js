@@ -1,4 +1,5 @@
 const qs = require('querystring')
+const responseStandard = require('../helpers/response')
 
 const { createCartModel, getCartModel, getCartCountModel, getDetailUserCartModel, getDetailCartModel, updateQuantityModel, deleteCartModel } = require('../models/cart')
 const { getDetailUserModel } = require('../models/users')
@@ -14,34 +15,24 @@ module.exports = {
           getDetailModel(itemId, result => {
             if (result.length) {
               createCartModel([userId, itemId, quantity], result => {
-                res.send({
-                  success: true,
-                  message: 'Cart has been created',
-                  data: {
-                    id: result.insertId,
-                    ...req.body
-                  }
-                })
+                const data = {
+                  id: result.insertId,
+                  user_id: userId,
+                  item_id: itemId,
+                  quantity
+                }
+                return responseStandard(res, 201, 'Cart has been created', { data })
               })
             } else {
-              res.send({
-                success: false,
-                message: `Item with id ${itemId} is not found`
-              })
+              return responseStandard(res, 404, `Item with id ${itemId} is not found`, {}, false)
             }
           })
         } else {
-          res.send({
-            success: false,
-            message: `User with id ${userId} is not found`
-          })
+          return responseStandard(res, 404, `User with id ${userId} is not found`, {}, false)
         }
       })
     } else {
-      res.send({
-        success: false,
-        message: 'All field must be filled'
-      })
+      return responseStandard(res, 400, 'All field must be filled', {}, false)
     }
   },
   getCart: (req, res) => {
@@ -95,19 +86,10 @@ module.exports = {
             pageInfo.prevLink = `http://localhost:8080/items?${pagePrev}`
           }
 
-          res.send({
-            success: true,
-            message: 'List of items',
-            data: result,
-            pageInfo
-          })
+          return responseStandard(res, 200, 'List of Cart', { data: result, pageInfo })
         })
       } else {
-        res.send({
-          success: false,
-          message: 'There is no item in list',
-          pageInfo
-        })
+        return responseStandard(res, 404, 'There is no item in list', {}, false)
       }
     })
   },
@@ -115,16 +97,9 @@ module.exports = {
     const { id } = req.params
     getDetailUserCartModel(id, result => {
       if (result.length) {
-        res.status(201).send({
-          success: true,
-          message: `Detail cart of user id ${id}`,
-          data: result
-        })
+        return responseStandard(res, 200, `Detail cart of user id ${id}`, { data: result })
       } else {
-        res.status(201).send({
-          success: false,
-          message: `Cart with user id ${id} is not found`
-        })
+        return responseStandard(res, 404, `Cart with user id ${id} is not found`, {}, false)
       }
     })
   },
@@ -138,43 +113,25 @@ module.exports = {
           if (data > 0) {
             updateQuantityModel([data, id], result => {
               if (result.affectedRows) {
-                res.status(201).send({
-                  success: true,
-                  message: `Cart with id ${id} has been updated`
-                })
+                return responseStandard(res, 200, `Cart with id ${id} has been updated`)
               } else {
-                res.status(500).send({
-                  success: false,
-                  message: 'Failed to update cart'
-                })
+                return responseStandard(res, 500, 'Failed to update cart', {}, false)
               }
             })
           } else {
             deleteCartModel(id, result => {
               if (result.affectedRows) {
-                res.status(201).send({
-                  success: true,
-                  message: `Cart with id ${id} has been deleted`
-                })
+                return responseStandard(res, 200, `Cart with id ${id} has been deleted`)
               } else {
-                res.status(500).send({
-                  success: false,
-                  message: 'Failed to delete cart'
-                })
+                return responseStandard(res, 500, 'Failed to delete cart', {}, false)
               }
             })
           }
         } else {
-          res.send({
-            success: false,
-            message: 'Please insert quantity'
-          })
+          return responseStandard(res, 400, 'Please insert quantity', {}, false)
         }
       } else {
-        res.send({
-          success: false,
-          message: `Cart with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `Cart with id ${id} is not found`, {}, false)
       }
     })
   },
@@ -184,22 +141,13 @@ module.exports = {
       if (result.length) {
         deleteCartModel(id, result => {
           if (result.affectedRows) {
-            res.status(201).send({
-              success: true,
-              message: `Cart with id ${id} has been deleted`
-            })
+            return responseStandard(res, 200, `Cart with id ${id} has been deleted`)
           } else {
-            res.status(500).send({
-              success: false,
-              message: 'Failed to delete cart'
-            })
+            return responseStandard(res, 500, 'Failed to delete cart', {}, false)
           }
         })
       } else {
-        res.send({
-          success: false,
-          message: `Cart with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `Cart with id ${id} is not found`, {}, false)
       }
     })
   }

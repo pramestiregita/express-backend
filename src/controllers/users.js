@@ -1,4 +1,5 @@
 const qs = require('querystring')
+const responseStandard = require('../helpers/response')
 
 const { createUserModels, getUsersModel, getCountModel, getDetailUserModel, updateUserModel, updatePartialModel, deleteUserModel } = require('../models/users')
 
@@ -9,25 +10,19 @@ module.exports = {
 
     if (name && email && phoneNumber && gender && dateOfBirth) {
       createUserModels([name, email, phoneNumber, gender, dateOfBirth, picture], result => {
-        res.send({
-          success: true,
-          message: 'User has been created',
-          data: {
-            id: result.insertId,
-            name: name,
-            email: email,
-            phone_number: phoneNumber,
-            gender: gender,
-            date_of_birth: dateOfBirth,
-            picture: picture
-          }
-        })
+        const data = {
+          id: result.insertId,
+          name: name,
+          email: email,
+          phone_number: phoneNumber,
+          gender: gender,
+          date_of_birth: dateOfBirth,
+          picture: picture
+        }
+        return responseStandard(res, 201, 'Success! User has been created', { data })
       })
     } else {
-      res.send({
-        success: false,
-        message: 'All item must be filled'
-      })
+      return responseStandard(res, 400, 'All field must be filled', {}, false)
     }
   },
   getUsers: (req, res) => {
@@ -81,19 +76,10 @@ module.exports = {
             pageInfo.prevLink = `${process.env.APP_URL}items?${pagePrev}`
           }
 
-          res.send({
-            success: true,
-            message: 'List of users',
-            data: result,
-            pageInfo
-          })
+          return responseStandard(res, 200, 'List of users', { data: result, pageInfo })
         })
       } else {
-        res.send({
-          success: false,
-          message: 'There is no users in list',
-          pageInfo
-        })
+        return responseStandard(res, 404, 'There is no user in list', {}, false)
       }
     })
   },
@@ -101,16 +87,9 @@ module.exports = {
     const { id } = req.params
     getDetailUserModel(id, result => {
       if (result.length) {
-        res.status(201).send({
-          success: true,
-          message: `Detail of id ${id}`,
-          data: result
-        })
+        return responseStandard(res, 201, `Detail of id ${id}`, { data: result })
       } else {
-        res.status(201).send({
-          success: false,
-          message: `User with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `User with id ${id} is not found`, {}, false)
       }
     })
   },
@@ -122,29 +101,17 @@ module.exports = {
         if (result.length) {
           updateUserModel([name, email, phoneNumber, gender, dateOfBirth, id], result => {
             if (result.affectedRows) {
-              res.status(201).send({
-                success: true,
-                message: `User with id ${id} has been updated`
-              })
+              return responseStandard(res, 201, `User with id ${id} has been updated`)
             } else {
-              res.status(500).send({
-                success: false,
-                message: 'Failed to update'
-              })
+              return responseStandard(res, 500, 'Failed to update', {}, false)
             }
           })
         } else {
-          res.status(500).send({
-            success: false,
-            message: `User with id ${id} is not found`
-          })
+          return responseStandard(res, 404, `User with id ${id} is not found`, {}, false)
         }
       })
     } else {
-      res.status(500).send({
-        success: false,
-        message: 'All fields must be filled'
-      })
+      return responseStandard(res, 400, 'All fields must be filled', {}, false)
     }
   },
   updateUserPartial: (req, res) => {
@@ -164,29 +131,17 @@ module.exports = {
         if (result.length) {
           updatePartialModel([data, id], result => {
             if (result.affectedRows) {
-              res.send({
-                success: true,
-                message: `User with id ${id} has been updated`
-              })
+              return responseStandard(res, 200, `User with id ${id} has been updated`)
             } else {
-              res.send({
-                success: false,
-                message: 'Failed to update'
-              })
+              return responseStandard(res, 500, 'Failed to update', {}, false)
             }
           })
         } else {
-          res.send({
-            success: false,
-            message: `User with id ${id} is not found`
-          })
+          return responseStandard(res, 404, `User with id ${id} is not found`, {}, false)
         }
       })
     } else {
-      res.send({
-        success: false,
-        message: 'At least 1 field must be filled'
-      })
+      return responseStandard(res, 400, 'At least 1 field must be filled', {}, false)
     }
   },
   deleteUser: (req, res) => {
@@ -195,22 +150,13 @@ module.exports = {
       if (result.length) {
         deleteUserModel(id, result => {
           if (result.affectedRows) {
-            res.status(201).send({
-              success: true,
-              message: 'User has been deleted'
-            })
+            return responseStandard(res, 201, 'User has been deleted')
           } else {
-            res.status(500).send({
-              success: false,
-              message: 'Failed to delete user'
-            })
+            return responseStandard(res, 500, 'Failed to delete user', {}, false)
           }
         })
       } else {
-        res.send({
-          success: false,
-          message: `User with id ${id} is not found`
-        })
+        return responseStandard(res, 404, `User with id ${id} is not found`, {}, false)
       }
     })
   }
