@@ -3,7 +3,7 @@ const model = require('../helpers/model')
 
 module.exports = {
   createModel: (data = {}) => {
-    const query = `INSERT INTO ${table} (role) VALUES (?)`
+    const query = `INSERT INTO ${table} (name) VALUES (?)`
     const results = model(query, data)
     return results
   },
@@ -17,8 +17,18 @@ module.exports = {
     const results = model(query, data)
     return results
   },
+  detailModel: (data = {}) => {
+    const query = `SELECT * FROM ${table} WHERE id=?`
+    const results = model(query, data)
+    return results
+  },
   updateModel: (data = []) => {
-    const query = `UPDATE ${table} SET name=? WHERE id = ?`
+    const query = `UPDATE ${table} SET name = ? WHERE id = ?`
+    const results = model(query, data)
+    return results
+  },
+  deleteModel: (data = {}) => {
+    const query = `DELETE FROM ${table} WHERE id = ?`
     const results = model(query, data)
     return results
   }
