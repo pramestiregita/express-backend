@@ -28,5 +28,16 @@ module.exports = {
 
     const results = await rolesModel.getModel([searchKey, searchValue, sortKey, sortBy], [limit, offset])
     responseStandard(res, 'List of Roles', { results, pageInfo })
+  },
+  changeName: async (req, res) => {
+    const { id } = req.params
+    const { name } = req.body
+
+    const results = await rolesModel.updateModel([name, id])
+    if (results.affectedRows) {
+      responseStandard(res, 'Role\'s name has been updated')
+    } else {
+      responseStandard(res, 'Failed to update name', {}, 304, false)
+    }
   }
 }
