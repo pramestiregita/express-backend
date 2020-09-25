@@ -12,9 +12,9 @@ app.use(cors())
 // import route
 // const itemsRouter = require('./src/routes/items')
 // const categoryRouter = require('./src/routes/category')
-// const usersRouter = require('./src/routes/manageUsers')
 // const cartRouter = require('./src/routes/cart')
 const rolesRouter = require('./src/routes/manageRoles')
+const usersRouter = require('./src/routes/manageUsers')
 
 // import middleware
 // const authMiddleware = require('./src/middlewares/auth')
@@ -28,6 +28,7 @@ const rolesRouter = require('./src/routes/manageRoles')
 // app.use('/manage/users', usersRouter)
 // app.use('/cart', cartRouter)
 app.use('/manage/roles', rolesRouter)
+app.use('/manage/users', usersRouter)
 
 app.listen(APP_PORT, () => {
   console.log(`App listening on port ${APP_PORT}`)
