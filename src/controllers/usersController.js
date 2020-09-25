@@ -13,7 +13,6 @@ module.exports = {
     } else {
       const { roleId, name, email, password, phone, genderId, birthdate } = results
       const isExist = await usersModel.checkEmailModel({ email })
-      console.log(isExist)
       if (!isExist.length) {
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
@@ -23,7 +22,6 @@ module.exports = {
           password: hashedPassword
         }
         const createUser = await usersModel.createUserModel(users)
-        console.log(createUser)
         if (createUser.affectedRows) {
           const detail = {
             user_id: createUser.insertId,
@@ -32,9 +30,7 @@ module.exports = {
             gender_id: genderId,
             birthdate: birthdate
           }
-          console.log(detail)
           const createDetail = await usersModel.createDetailModel(detail)
-          console.log(createDetail)
           if (createDetail.affectedRows) {
             const data = {
               ...users,
@@ -52,47 +48,46 @@ module.exports = {
         return responseStandard(res, 'Email has already used', {}, 400, false)
       }
     }
+  },
+  getAll: async (req, res) => {
+    const { searchKey, searchValue } = searching.users(req.query.search)
+    console.log(searchKey, searchValue)
+    const count = await usersModel.countUsersModel([searchKey, searchValue])
+    const page = paging(req, count[0].count)
+    const { offset, pageInfo } = page
+    const { limitData: limit } = pageInfo
+
+    const results = await usersModel.getUsersModel([searchKey, searchValue], [limit, offset])
+    if (results.length) {
+      const data = results.map(item => {
+        item = {
+          ...item,
+          password: null
+        }
+        return item
+      })
+      return responseStandard(res, 'List of Users', { data, pageInfo })
+    } else {
+      return responseStandard(res, 'There is no user in list', {}, 404, false)
+    }
+  },
+  getDetailUser: async (req, res) => {
+    const { id } = req.params
+
+    const results = await usersModel.detailUserModel(id)
+    if (results.length) {
+      const data = results.map(item => {
+        item = {
+          ...item,
+          password: null
+        }
+        return item
+      })
+      responseStandard(res, `Detail of user id ${id}`, { data })
+    } else {
+      responseStandard(res, `User with id ${id} is not found`, {}, 404, false)
+    }
   }
-  // getAll: async (req, res) => {
-  //   console.log(req.params.search)
-  //   const { searchValue } = searching(req.query.search)
-  //   const count = await usersModel.countUsers(searchValue)
-  //   const page = paging(req, count[0].count)
-  //   const { offset, pageInfo } = page
-  //   const { limitData: limit } = pageInfo
-
-  //   const results = await usersModel.getUsers(searchValue, [limit, offset])
-  //   console.log(results)
-  //   if (results.length) {
-  //     const data = results.map(item => {
-  //       item = {
-  //         ...item,
-  //         password: null
-  //       }
-  //       return item
-  //     })
-  //     return responseStandard(res, 'List of Users', { data, pageInfo })
-  //   } else {
-  //     return responseStandard(res, 'There is no user in list', {}, 404, false)
-  //   }
-  // },
-  // getDetailUser: async (req, res) => {
-  //   const { id } = req.params
-
-  //   const results = await usersModel.getByCondition({ id: id })
-  //   if (results.length) {
-  //     const data = results.map(item => {
-  //       item = {
-  //         ...item,
-  //         password: null
-  //       }
-  //       return item
-  //     })
-  //     responseStandard(res, `Detail of user id ${id}`, { data })
-  //   } else {
-  //     responseStandard(res, `User with id ${id} is not found`, {}, 404, false)
-  //   }
-  // },
   // deleteUser: async (req, res) => {
   //   const { id } = req.params
 
