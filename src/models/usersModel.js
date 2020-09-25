@@ -1,56 +1,58 @@
 const table = 'users'
-const column = 'users.id, roles.name AS role, users.email, users.password'
-const join = 'LEFT JOIN roles ON roles.id = users.role_id'
+const tableDetail = 'user_details'
 const model = require('../helpers/model')
 
+const column = 'users.id, roles.name AS role, user_details.name, users.email, users.password, user_details.phone, gender.name AS gender, user_details.birthdate, user_details.created_at, user_details.updated_at'
+const join = 'LEFT JOIN user_details ON user_details.id=users.id LEFT JOIN roles ON roles.id=users.role_id LEFT JOIN gender ON gender.id=users.gender_id'
+
 module.exports = {
-  createModel: (data = {}) => {
+  createUserModel: (data = {}) => { // role_id, email, password
     const query = `INSERT INTO ${table} SET ?`
     const results = model(query, data)
     return results
   },
-  getByCondition: (data = {}) => {
-    const query = `SELECT ${column} FROM ${table} ${join} WHERE users.?`
+  createDetailModel: (data = {}) => { // user_id, name, picture, phone, gender_id, birthdate
+    const query = `INSERT INTO ${tableDetail} SET ?`
     const results = model(query, data)
     return results
   },
-  getUsers: (email, data = []) => {
-    const search = `WHERE users.email LIKE '%${email}%'`
-    const query = `SELECT * FROM ${table} ${join} ${search} LIMIT ? OFFSET ?`
+  checkEmailModel: (data = {}) => { // no duplicat email
+    const query = `SELECT * FROM ${table} WHERE ?`
     const results = model(query, data)
     return results
   },
-  countUsers: (email) => {
-    const search = `WHERE users.email LIKE '%${email}%'`
+  getUsersModel: (arr, data = []) => { // get all user (id, role, email, password)
+    const user = 'users.id, roles.name AS role, users.email, users.password'
+    const role = 'LEFT JOIN roles ON roles.id=users.role_id'
+    const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
+    const query = `SELECT ${user} FROM ${table} ${role} ${search} LIMIT ? OFFSET ?`
+    const results = model(query, data)
+    return results
+  },
+  detailUserModel: (data = {}) => { // get detail user (name, picture, phone, gender_id, birthdate)
+    const query = `SELECT ${column} FROM ${table} ${join} WHERE users.id=?`
+    const results = model(query, data)
+    return results
+  },
+  countUsersModel: (arr) => { // count for paging
+    const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
     const query = `SELECT COUNT(*) as count FROM ${table} ${search}`
     const results = model(query)
     return results
+  },
+  updateUserModel: (data = []) => { // update email and password
+    const query = `UPDATE ${table} SET ? WHERE id=?`
+    const results = model(query, data)
+    return results
+  },
+  updateDetailModel: (data = []) => { // update detail (name, picture, phone, gender_id, birthdate)
+    const query = `UPDATE ${tableDetail} SET ? WHERE user_id=?`
+    const results = model(query, data)
+    return results
+  },
+  deleteUserModel: (data = {}) => { // delete user by id
+    const query = `DELETE FROM ${table} WHERE id=?`
+    const results = model(query, data)
+    return results
   }
-  // updateUserModel: (arr, cb) => {
-  //   const name = `name = "${arr[0]}"`
-  //   const email = `email = "${arr[1]}"`
-  //   const phoneNumber = `phone_number = ${arr[2]}`
-  //   const gender = `gender = '${arr[3]}'`
-  //   const dateOfBirth = `date_of_birth = "${arr[4]}"`
-  //   const update = `${name}, ${email}, ${phoneNumber}, ${gender}, ${dateOfBirth}`
-  //   const query = `UPDATE ${table} SET ${update} WHERE id = ${arr[5]}`
-  //   db.query(query, (_err, result, _field) => {
-  //     cb(result)
-  //   })
-  // },
-  // updatePartialModel: (arr, cb) => {
-  //   const query = `UPDATE ${table} SET ${arr[0]} WHERE id=${arr[1]}`
-  //   console.log(query)
-  //   db.query(query, (err, result, _fields) => {
-  //     console.log(result)
-  //     console.log(err)
-  //     cb(result)
-  //   })
-  // },
-  // deleteUserModel: (id, cb) => {
-  //   const query = `DELETE FROM ${table} WHERE id=${id}`
-  //   db.query(query, (_err, result, _field) => {
-  //     cb(result)
-  //   })
-  // }
 }
