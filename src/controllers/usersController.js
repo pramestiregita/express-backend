@@ -87,29 +87,63 @@ module.exports = {
     } else {
       responseStandard(res, `User with id ${id} is not found`, {}, 404, false)
     }
-  }
-  // deleteUser: async (req, res) => {
-  //   const { id } = req.params
+  },
+  updateUser: async (req, res) => {
+    const { id } = req.params
+    const { value: results, error } = schema.validate(req.body)
+    if (error) {
+      return responseStandard(res, 'Error', { error: error.message }, 400, false)
+    } else {
+      const { roleId, name, email, password, phone, genderId, birthdate } = results
+      const isExist = await usersModel.checkEmailModel({ email })
+      if (isExist[0].id === parseInt(id)) {
+        if (results === isExist[0]) {
+          return responseStandard(res, 'There is no change', {}, 304, false)
+        } else {
+          const salt = await bcrypt.genSalt(10)
+          const hashedPassword = await bcrypt.hash(password, salt)
+          const users = {
+            role_id: roleId,
+            email: email,
+            password: hashedPassword
+          }
+          const updateUser = await usersModel.updateUserModel([users, id])
+          if (updateUser.affectedRows) {
+            const detail = {
+              user_id: id,
+              name: name,
+              phone: phone,
+              gender_id: genderId,
+              birthdate: birthdate
+            }
+            const updateDetail = await usersModel.updateDetailModel([detail, id])
+            if (updateDetail.affectedRows) {
+              return responseStandard(res, 'Success! User has been updated!')
+            } else {
+              return responseStandard(res, 'Failed to update user!', {}, 400, false)
+            }
+          } else {
+            return responseStandard(res, 'Failed to update user!', {}, 400, false)
+          }
+        }
+      } else {
+        return responseStandard(res, 'Email has already used', {}, 400, false)
+      }
+    }
+  },
+  deleteUser: async (req, res) => {
+    const { id } = req.params
 
-  //   const isExist = await usersModel.getByCondition({ id: id })
-  //   try {
-  //     console.log(isExist)
-  //     if (isExist.length > 0) {
-  //       const results = await usersModel.deleteModel(id)
-  //       try {
-  //         if (results.affectedRows) {
-  //           return responseStandard(res, 'User has been deleted')
-  //         } else {
-  //           return responseStandard(res, 'Failed to delete! Try again later!', {}, 500, false)
-  //         }
-  //       } catch (err) {
-  //         return responseStandard(res, 'Error', { error: err.message }, 500, false)
-  //       }
-  //     } else {
-  //       return responseStandard(res, 'User not found', {}, 404, false)
-  //     }
-  //   } catch (err) {
-  //     return responseStandard(req, 'Error', { error: err.message }, 500, false)
-  //   }
-  // }
+    const isExist = await usersModel.detailUserModel(id)
+    if (isExist.length > 0) {
+      const results = await usersModel.deleteUserModel(id)
+      if (results.affectedRows) {
+        return responseStandard(res, 'User has been deleted')
+      } else {
+        return responseStandard(res, 'Failed to delete! Try again later!', {}, 500, false)
+      }
+    } else {
+      return responseStandard(res, 'User not found', {}, 404, false)
+    }
+  }
 }
