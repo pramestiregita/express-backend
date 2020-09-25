@@ -1,4 +1,6 @@
 const table = 'users'
+const column = 'users.id, roles.name AS role, users.email, users.password'
+const join = 'LEFT JOIN roles ON roles.id = users.role_id'
 const model = require('../helpers/model')
 
 module.exports = {
@@ -8,41 +10,22 @@ module.exports = {
     return results
   },
   getByCondition: (data = {}) => {
-    const query = `SELECT * FROM ${table} WHERE ?`
+    const query = `SELECT ${column} FROM ${table} ${join} WHERE users.?`
     const results = model(query, data)
     return results
   },
-  getUsers: (arr, data = []) => {
-    const column = 'users.id, roles.name AS role, users.name, users.email, users.password'
-    const join = 'LEFT JOIN roles ON roles.id = users.role_id'
-    const search = `WHERE users.${arr[0]} LIKE '%${arr[1]}%'`
-    const sort = `ORDER BY users.${arr[2]} ${arr[3]}`
-    const query = `SELECT ${column} FROM ${table} ${join} ${search} ${sort} LIMIT ? OFFSET ?`
+  getUsers: (email, data = []) => {
+    const search = `WHERE users.email LIKE '%${email}%'`
+    const query = `SELECT * FROM ${table} ${join} ${search} LIMIT ? OFFSET ?`
     const results = model(query, data)
     return results
   },
-  countUsers: () => {
-    // const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
-    // const sort = `ORDER BY ${arr[4]} ${arr[5]}`
-    const query = `SELECT COUNT(*) as count FROM ${table}`
+  countUsers: (email) => {
+    const search = `WHERE users.email LIKE '%${email}%'`
+    const query = `SELECT COUNT(*) as count FROM ${table} ${search}`
     const results = model(query)
     return results
   }
-
-  // getCountModel: (arr, cb) => {
-  //   const search = `WHERE ${arr[0]} LIKE '%${arr[1]}%'`
-  //   const sort = `ORDER BY ${arr[4]} ${arr[5]}`
-  //   const query = `SELECT COUNT(*) as count FROM ${table} ${search} ${sort}`
-  //   db.query(query, (_err, data, _field) => {
-  //     cb(data)
-  //   })
-  // },
-  // getDetailUserModel: (id, cb) => {
-  //   const query = `SELECT * FROM ${table} WHERE id=${id}`
-  //   db.query(query, (_err, result, _fields) => {
-  //     cb(result)
-  //   })
-  // },
   // updateUserModel: (arr, cb) => {
   //   const name = `name = "${arr[0]}"`
   //   const email = `email = "${arr[1]}"`

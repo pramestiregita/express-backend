@@ -1,8 +1,6 @@
-// const qs = require('querystring')
 const usersModel = require('../models/usersModel')
 const paging = require('../helpers/pagination')
 const searching = require('../helpers/search')
-const sorting = require('../helpers/sort')
 const responseStandard = require('../helpers/response')
 const joi = require('joi')
 const bcrypt = require('bcrypt')
@@ -47,14 +45,14 @@ module.exports = {
     }
   },
   getAll: async (req, res) => {
-    const { searchKey, searchValue } = searching(req.query.search)
-    const { sortKey, sortBy } = sorting(req.query.sort)
-    const count = await usersModel.countUsers()
+    console.log(req.params.search)
+    const { searchValue } = searching(req.query.search)
+    const count = await usersModel.countUsers(searchValue)
     const page = paging(req, count[0].count)
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo
 
-    const results = await usersModel.getUsers([searchKey, searchValue, sortKey, sortBy], [limit, offset])
+    const results = await usersModel.getUsers(searchValue, [limit, offset])
     console.log(results)
     if (results.length) {
       const data = results.map(item => {
@@ -68,18 +66,24 @@ module.exports = {
     } else {
       return responseStandard(res, 'There is no user in list', {}, 404, false)
     }
+  },
+  getDetailUser: async (req, res) => {
+    const { id } = req.params
+
+    const results = await usersModel.getByCondition({ id: id })
+    if (results.length) {
+      const data = results.map(item => {
+        item = {
+          ...item,
+          password: null
+        }
+        return item
+      })
+      responseStandard(res, `Detail of user id ${id}`, { data })
+    } else {
+      responseStandard(res, `User with id ${id} is not found`, {}, 404, false)
+    }
   }
-  //
-  // getDetailUser: (req, res) => {
-  //   const { id } = req.params
-  //   getDetailUserModel(id, result => {
-  //     if (result.length) {
-  //       return responseStandard(res, `Detail of id ${id}`, { data: result })
-  //     } else {
-  //       return responseStandard(res, `User with id ${id} is not found`, {}, 404, false)
-  //     }
-  //   })
-  // },
   // updateUser: (req, res) => {
   //   const { id } = req.params
   //   const { name, email, phoneNumber, gender, dateOfBirth } = req.body
