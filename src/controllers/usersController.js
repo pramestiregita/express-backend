@@ -94,8 +94,7 @@ module.exports = {
   //   }
   // },
   getAll: async (req, res) => {
-    const { searchKey, searchValue } = searching.users(req.query.search)
-    console.log(searchKey, searchValue)
+    const { searchKey, searchValue } = searching.name(req.query.search)
     const count = await usersModel.countUsersModel([searchKey, searchValue])
     const page = paging(req, count[0].count)
     const { offset, pageInfo } = page
