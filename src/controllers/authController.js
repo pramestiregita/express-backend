@@ -18,8 +18,8 @@ module.exports = {
       const roleId = data[0].role_id
       const id = data[0].id
       const compared = await bcrypt.compare(password, hashed)
-      if (roleId === 1) {
-        if (compared === true) {
+      if (compared === true) {
+        if (roleId === 1) {
           jwt.sign({ id: id }, SECRETKEY_ADMIN, (err, token) => {
             if (err) {
               return responseStandard(res, 'Error', { error: err.message }, 500, false)

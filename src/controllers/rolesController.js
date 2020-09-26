@@ -13,21 +13,25 @@ module.exports = {
         id: results.insertId,
         ...req.body
       }
-      responseStandard(res, 'Item has been created!', { data }, 201)
+      responseStandard(res, 'Role has been created!', { data }, 201)
     } else {
       responseStandard(res, 'Try again! Please insert role name!', {}, 400, false)
     }
   },
   getRoles: async (req, res) => {
-    const { searchKey, searchValue } = searching.roles(req.query.search)
-    const { sortKey, sortBy } = sorting(req.query.sort)
+    const { searchKey, searchValue } = searching.name(req.query.search)
+    const { sortKey, sortBy } = sorting.name(req.query.sort)
     const count = await rolesModel.countModel()
     const page = paging(req, count[0].count)
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo
 
     const results = await rolesModel.getModel([searchKey, searchValue, sortKey, sortBy], [limit, offset])
-    responseStandard(res, 'List of Roles', { results, pageInfo })
+    if (results.length) {
+      return responseStandard(res, 'List of Roles', { results, pageInfo })
+    } else {
+      return responseStandard(res, 'There is no data in list', {}, 404, false)
+    }
   },
   detailRole: async (req, res) => {
     const { id } = req.params

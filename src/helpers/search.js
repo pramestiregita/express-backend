@@ -1,5 +1,5 @@
 module.exports = {
-  roles: (search) => {
+  name: (search) => {
     if (typeof search === 'object') {
       const searchKey = Object.keys(search)[0]
       const searchValue = Object.values(search)[0]
@@ -10,7 +10,7 @@ module.exports = {
       return { searchKey, searchValue }
     }
   },
-  users: (search) => {
+  email: (search) => {
     if (typeof search === 'object') {
       const searchKey = Object.keys(search)[0]
       const searchValue = Object.values(search)[0]

@@ -1,8 +1,9 @@
 const usersModel = require('../models/usersModel')
+const storesModels = require('../models/storesModels')
 const paging = require('../helpers/pagination')
 const searching = require('../helpers/search')
 const responseStandard = require('../helpers/response')
-const { custSchema: schemaC } = require('../helpers/validation')
+const { custSchema: schemaC, sellerSchema: schemaS } = require('../helpers/validation')
 const bcrypt = require('bcrypt')
 
 module.exports = {
@@ -49,50 +50,60 @@ module.exports = {
       }
     }
   },
-  // createStore: async (req, res) => {
-  //   const { value: results, error } = schemaS.validate(req.body)
-  //   if (error) {
-  //     return responseStandard(res, 'Error', { error: error.message }, 400, false)
-  //   } else {
-  //     const { roleId, name, storeName, email, password, phone, genderId, birthdate } = results
-  //     const isExist = await usersModel.checkEmailModel({ email })
-  //     if (!isExist.length) {
-  //       const salt = await bcrypt.genSalt(10)
-  //       const hashedPassword = await bcrypt.hash(password, salt)
-  //       const users = {
-  //         role_id: roleId,
-  //         email: email,
-  //         password: hashedPassword
-  //       }
-  //       const createUser = await usersModel.createUserModel(users)
-  //       if (createUser.affectedRows) {
-  //         const detail = {
-  //           user_id: createUser.insertId,
-  //           name: name,
-  //           store_name: storeName,
-  //           phone: phone,
-  //           gender_id: genderId,
-  //           birthdate: birthdate
-  //         }
-  //         const createDetail = await usersModel.createDetailModel(detail)
-  //         if (createDetail.affectedRows) {
-  //           const data = {
-  //             ...users,
-  //             ...detail,
-  //             password: null
-  //           }
-  //           return responseStandard(res, 'Success! User has been created!', { data: data })
-  //         } else {
-  //           return responseStandard(res, 'Failed to create user!', {}, 400, false)
-  //         }
-  //       } else {
-  //         return responseStandard(res, 'Failed to create user!', {}, 400, false)
-  //       }
-  //     } else {
-  //       return responseStandard(res, 'Email has already used', {}, 400, false)
-  //     }
-  //   }
-  // },
+  createStore: async (req, res) => {
+    const { value: results, error } = schemaS.validate(req.body)
+    if (error) {
+      return responseStandard(res, 'Error', { error: error.message }, 400, false)
+    } else {
+      const { roleId, name, storeName, email, password, phone, genderId, birthdate, description } = results
+      const isExist = await usersModel.checkEmailModel({ email })
+      if (!isExist.length) {
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password, salt)
+        const users = {
+          role_id: roleId,
+          email: email,
+          password: hashedPassword
+        }
+        const createUser = await usersModel.createUserModel(users)
+        if (createUser.affectedRows) {
+          const detail = {
+            user_id: createUser.insertId,
+            name: name,
+            phone: phone,
+            gender_id: genderId,
+            birthdate: birthdate
+          }
+          const createDetail = await usersModel.createDetailModel(detail)
+          if (createDetail.affectedRows) {
+            const store = {
+              user_id: createUser.insertId,
+              name: storeName,
+              description: description
+            }
+            const createStore = await storesModels.createModel(store)
+            if (createStore.affectedRows) {
+              const data = {
+                ...users,
+                ...detail,
+                ...store,
+                password: null
+              }
+              return responseStandard(res, 'Success! User has been created!', { data: data })
+            } else {
+              return responseStandard(res, 'Failed to create user!', {}, 400, false)
+            }
+          } else {
+            return responseStandard(res, 'Failed to create user!', {}, 400, false)
+          }
+        } else {
+          return responseStandard(res, 'Failed to create user!', {}, 400, false)
+        }
+      } else {
+        return responseStandard(res, 'Email has already used', {}, 400, false)
+      }
+    }
+  },
   getAll: async (req, res) => {
     const { searchKey, searchValue } = searching.name(req.query.search)
     const count = await usersModel.countUsersModel([searchKey, searchValue])
