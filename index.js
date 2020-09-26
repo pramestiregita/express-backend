@@ -9,14 +9,21 @@ const app = express()
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors())
 
-// import route
-const rolesRouter = require('./src/routes/manageRoles')
-const usersRouter = require('./src/routes/manageUsers')
-const userDetailsRouter = require('./src/routes/manageUserDetails')
+// import middleware
+const {
+  authAdmin, authSeller, authCust
+} = require('./src/middlewares/authMiddleware')
 
-app.use('/manage/roles', rolesRouter)
-app.use('/manage/users', usersRouter)
-app.use('/manage/user_detail', userDetailsRouter)
+// import route
+const loginRouter = require('./src/routes/public/loginRoutes')
+const adminRouter = require('./src/routes/adminRoutes')
+const sellerRouter = require('./src/routes/sellerRoutes')
+const custRouter = require('./src/routes/customerRoutes')
+
+app.use('/auth', loginRouter)
+app.use('/admin', authAdmin, adminRouter)
+app.use('/seller', authSeller, sellerRouter)
+app.use('/customer', authCust, custRouter)
 
 app.listen(APP_PORT, () => {
   console.log(`App listening on port ${APP_PORT}`)

@@ -21,6 +21,11 @@ module.exports = {
     const results = model(query, data)
     return results
   },
+  getByCondition: (data = []) => { // no duplicat email
+    const query = `SELECT * FROM ${table} WHERE ? AND ?`
+    const results = model(query, data)
+    return results
+  },
   getUsersModel: (arr, data = []) => { // get all user (id, role, email, password)
     const user = 'users.id, roles.name AS role, users.email, users.password'
     const role = 'LEFT JOIN roles ON roles.id=users.role_id'

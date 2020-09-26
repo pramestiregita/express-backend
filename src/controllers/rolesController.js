@@ -19,7 +19,7 @@ module.exports = {
     }
   },
   getRoles: async (req, res) => {
-    const { searchKey, searchValue } = searching(req.query.search)
+    const { searchKey, searchValue } = searching.roles(req.query.search)
     const { sortKey, sortBy } = sorting(req.query.sort)
     const count = await rolesModel.countModel()
     const page = paging(req, count[0].count)

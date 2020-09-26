@@ -72,7 +72,7 @@ module.exports = {
     }
   },
   getDetailUser: async (req, res) => {
-    const { id } = req.params
+    const { id } = req.data
 
     const results = await usersModel.detailUserModel(id)
     if (results.length) {
@@ -89,13 +89,14 @@ module.exports = {
     }
   },
   updateUser: async (req, res) => {
-    const { id } = req.params
+    const { id } = req.data
     const { value: results, error } = schema.validate(req.body)
     if (error) {
       return responseStandard(res, 'Error', { error: error.message }, 400, false)
     } else {
       const { roleId, name, email, password, phone, genderId, birthdate } = results
       const isExist = await usersModel.checkEmailModel({ email })
+      console.log(isExist)
       if (isExist[0].id === parseInt(id)) {
         if (results === isExist[0]) {
           return responseStandard(res, 'There is no change', {}, 304, false)
@@ -132,6 +133,38 @@ module.exports = {
     }
   },
   deleteUser: async (req, res) => {
+    const { id } = req.data
+
+    const isExist = await usersModel.detailUserModel(id)
+    if (isExist.length > 0) {
+      const results = await usersModel.deleteUserModel(id)
+      if (results.affectedRows) {
+        return responseStandard(res, 'User has been deleted')
+      } else {
+        return responseStandard(res, 'Failed to delete! Try again later!', {}, 500, false)
+      }
+    } else {
+      return responseStandard(res, 'User not found', {}, 404, false)
+    }
+  },
+  getDetailForAdmin: async (req, res) => {
+    const { id } = req.params
+
+    const results = await usersModel.detailUserModel(id)
+    if (results.length) {
+      const data = results.map(item => {
+        item = {
+          ...item,
+          password: null
+        }
+        return item
+      })
+      responseStandard(res, `Detail of user id ${id}`, { data })
+    } else {
+      responseStandard(res, `User with id ${id} is not found`, {}, 404, false)
+    }
+  },
+  deleteUserForAdmin: async (req, res) => {
     const { id } = req.params
 
     const isExist = await usersModel.detailUserModel(id)
