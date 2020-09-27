@@ -7,6 +7,9 @@ const bcrypt = require('bcrypt')
 
 module.exports = {
   create: async (req, res) => {
+    const picture = `/uploads/${req.file.filename}`
+    console.log(req.file)
+
     const { value: results, error } = schemaC.validate(req.body)
     if (error) {
       return responseStandard(res, 'Error', { error: error.message }, 400, false)
@@ -26,6 +29,7 @@ module.exports = {
           const detail = {
             user_id: createUser.insertId,
             name: name,
+            picture: picture,
             phone: phone,
             gender_id: genderId,
             birthdate: birthdate
