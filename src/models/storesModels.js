@@ -6,5 +6,10 @@ module.exports = {
     const query = `INSERT INTO ${table} SET ?`
     const results = model(query, data)
     return results
+  },
+  updateModel: (data = []) => {
+    const query = `UPDATE ${table} SET ? WHERE ?`
+    const results = model(query, data)
+    return results
   }
 }

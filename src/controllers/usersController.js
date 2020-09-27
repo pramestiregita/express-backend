@@ -1,9 +1,8 @@
 const usersModel = require('../models/usersModel')
-const storesModels = require('../models/storesModels')
 const paging = require('../helpers/pagination')
 const searching = require('../helpers/search')
 const responseStandard = require('../helpers/response')
-const { custSchema: schemaC, sellerSchema: schemaS } = require('../helpers/validation')
+const { custSchema: schemaC } = require('../helpers/validation')
 const bcrypt = require('bcrypt')
 
 module.exports = {
@@ -39,60 +38,6 @@ module.exports = {
               password: null
             }
             return responseStandard(res, 'Success! User has been created!', { data: data })
-          } else {
-            return responseStandard(res, 'Failed to create user!', {}, 400, false)
-          }
-        } else {
-          return responseStandard(res, 'Failed to create user!', {}, 400, false)
-        }
-      } else {
-        return responseStandard(res, 'Email has already used', {}, 400, false)
-      }
-    }
-  },
-  createStore: async (req, res) => {
-    const { value: results, error } = schemaS.validate(req.body)
-    if (error) {
-      return responseStandard(res, 'Error', { error: error.message }, 400, false)
-    } else {
-      const { roleId, name, storeName, email, password, phone, genderId, birthdate, description } = results
-      const isExist = await usersModel.checkEmailModel({ email })
-      if (!isExist.length) {
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
-        const users = {
-          role_id: roleId,
-          email: email,
-          password: hashedPassword
-        }
-        const createUser = await usersModel.createUserModel(users)
-        if (createUser.affectedRows) {
-          const detail = {
-            user_id: createUser.insertId,
-            name: name,
-            phone: phone,
-            gender_id: genderId,
-            birthdate: birthdate
-          }
-          const createDetail = await usersModel.createDetailModel(detail)
-          if (createDetail.affectedRows) {
-            const store = {
-              user_id: createUser.insertId,
-              name: storeName,
-              description: description
-            }
-            const createStore = await storesModels.createModel(store)
-            if (createStore.affectedRows) {
-              const data = {
-                ...users,
-                ...detail,
-                ...store,
-                password: null
-              }
-              return responseStandard(res, 'Success! User has been created!', { data: data })
-            } else {
-              return responseStandard(res, 'Failed to create user!', {}, 400, false)
-            }
           } else {
             return responseStandard(res, 'Failed to create user!', {}, 400, false)
           }
@@ -231,6 +176,31 @@ module.exports = {
       }
     } else {
       return responseStandard(res, 'User not found', {}, 404, false)
+    }
+  },
+  createAdmin: async (req, res) => {
+    const { roleId, email, password } = req.body
+    if (roleId && email && password) {
+      const isExist = await usersModel.checkEmailModel({ email })
+      if (!isExist.length) {
+        const salt = await bcrypt.genSalt(10)
+        const hashedPassword = await bcrypt.hash(password, salt)
+        const users = {
+          role_id: roleId,
+          email: email,
+          password: hashedPassword
+        }
+        const createUser = await usersModel.createUserModel(users)
+        if (createUser.affectedRows) {
+          return responseStandard(res, 'Success! Admin User has been created!', { data: users })
+        } else {
+          return responseStandard(res, 'Failed to create user!', {}, 400, false)
+        }
+      } else {
+        return responseStandard(res, 'Email has already used', {}, 400, false)
+      }
+    } else {
+      return responseStandard(res, 'All fields must be filled!', {}, 400, false)
     }
   }
 }
