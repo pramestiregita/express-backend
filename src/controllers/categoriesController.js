@@ -28,7 +28,7 @@ module.exports = {
 
     const results = await categoriesModel.getModel([searchKey, searchValue, sortKey, sortBy], [limit, offset])
     if (results.length) {
-      return responseStandard(res, 'List of Roles', { results, pageInfo })
+      return responseStandard(res, 'List of Category', { results, pageInfo })
     } else {
       return responseStandard(res, 'There is no item in list', {}, 404, false)
     }
