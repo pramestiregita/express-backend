@@ -21,6 +21,11 @@ module.exports = {
     const results = model(query, data)
     return results
   },
+  checkPhoneModel: (data = {}) => { // no duplicat email
+    const query = `SELECT * FROM ${tableDetail} WHERE ?`
+    const results = model(query, data)
+    return results
+  },
   getByCondition: (data = []) => { // no duplicat email
     const query = `SELECT * FROM ${table} WHERE ? AND ?`
     const results = model(query, data)

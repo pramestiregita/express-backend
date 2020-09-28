@@ -33,5 +33,15 @@ module.exports = {
     colorName: joi.string().required(),
     hexcode: joi.string().required(),
     quantity: joi.string().required()
+  }),
+  colorUpdateSchema: joi.object({
+    colorId: joi.string().required(),
+    colorName: joi.string().required(),
+    hexcode: joi.string().required(),
+    quantity: joi.string().required()
+  }),
+  cartSchema: joi.object({
+    productId: joi.string().required(),
+    quantity: joi.string().required()
   })
 }

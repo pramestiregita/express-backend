@@ -6,9 +6,13 @@ const bcrypt = require('bcrypt')
 
 module.exports = {
   createStore: async (req, res) => {
+    if (req.fileValidationError) {
+      return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
+    }
+    const picture = `/uploads/${req.file.filename}`
     const { value: results, error } = schemaS.validate(req.body)
     if (error) {
-      return responseStandard(res, 'Error', { error: error.message }, 400, false)
+      return responseStandard(res, 'Error', { error: error.message }, 500, false)
     } else {
       const { roleId, name, storeName, email, password, phone, genderId, birthdate, description } = results
       const isExist = await usersModel.checkEmailModel({ email })
@@ -25,6 +29,7 @@ module.exports = {
           const detail = {
             user_id: createUser.insertId,
             name: name,
+            picture: picture,
             phone: phone,
             gender_id: genderId,
             birthdate: birthdate

@@ -1,5 +1,6 @@
 const table = 'products'
 const tableColor = 'products_colors'
+const tablePict = 'products_images'
 const tableCond = 'conditions'
 const tableCat = 'categories'
 const model = require('../helpers/model')
@@ -18,8 +19,13 @@ module.exports = {
     const results = model(query, data)
     return results
   },
-  countModel: () => {
-    const query = `SELECT COUNT(*) as count FROM ${table}`
+  createPictModel: (data = []) => {
+    const query = `INSERT INTO ${tablePict} (product_id, image) VALUES (?, ?), (?, ?), (?, ?), (?, ?)`
+    const results = model(query, data)
+    return results
+  },
+  countModel: (arr) => {
+    const query = `SELECT COUNT(*) as count FROM ${table} WHERE products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]}`
     const results = model(query)
     return results
   },
@@ -43,6 +49,11 @@ module.exports = {
     const results = model(query, data)
     return results
   },
+  // updatePictModel: (data = []) => {
+  //   const query = `UPDATE ${tablePict} SET (image) VALUES (?), (?), (?), (?) WHERE color_id=?`
+  //   const results = model(query, data)
+  //   return results
+  // },
   deleteModel: (data = {}) => {
     const query = `DELETE FROM ${table} WHERE id = ?`
     const results = model(query, data)

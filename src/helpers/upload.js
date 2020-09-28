@@ -1,7 +1,6 @@
 const multer = require('multer')
 const fs = require('fs')
 const path = require('path')
-const { send } = require('process')
 const size = 2000
 
 const storage = multer.diskStorage({
@@ -23,7 +22,8 @@ const upload = multer({
   limits: size,
   fileFilter: (req, file, cb) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb((new Error('The uploaded file must be an image').message), false)
+      req.fileValidationError = 'Only image files are allowed!'
+      return cb(null, false)
     }
     cb(null, true)
   }

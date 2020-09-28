@@ -7,8 +7,11 @@ const bcrypt = require('bcrypt')
 
 module.exports = {
   create: async (req, res) => {
+    if (req.fileValidationError) {
+      return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
+    }
     const picture = `/uploads/${req.file.filename}`
-    console.log(req.file)
+    // console.log(picture)
 
     const { value: results, error } = schemaC.validate(req.body)
     if (error) {
@@ -17,36 +20,41 @@ module.exports = {
       const { roleId, name, email, password, phone, genderId, birthdate } = results
       const isExist = await usersModel.checkEmailModel({ email })
       if (!isExist.length) {
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
-        const users = {
-          role_id: roleId,
-          email: email,
-          password: hashedPassword
-        }
-        const createUser = await usersModel.createUserModel(users)
-        if (createUser.affectedRows) {
-          const detail = {
-            user_id: createUser.insertId,
-            name: name,
-            picture: picture,
-            phone: phone,
-            gender_id: genderId,
-            birthdate: birthdate
+        const isExist = await usersModel.checkPhoneModel({ phone })
+        if (!isExist.length) {
+          const salt = await bcrypt.genSalt(10)
+          const hashedPassword = await bcrypt.hash(password, salt)
+          const users = {
+            role_id: roleId,
+            email: email,
+            password: hashedPassword
           }
-          const createDetail = await usersModel.createDetailModel(detail)
-          if (createDetail.affectedRows) {
-            const data = {
-              ...users,
-              ...detail,
-              password: null
+          const createUser = await usersModel.createUserModel(users)
+          if (createUser.affectedRows) {
+            const detail = {
+              user_id: createUser.insertId,
+              name: name,
+              picture: picture,
+              phone: phone,
+              gender_id: genderId,
+              birthdate: birthdate
             }
-            return responseStandard(res, 'Success! User has been created!', { data: data })
+            const createDetail = await usersModel.createDetailModel(detail)
+            if (createDetail.affectedRows) {
+              const data = {
+                ...users,
+                ...detail,
+                password: null
+              }
+              return responseStandard(res, 'Success! User has been created!', { data: data })
+            } else {
+              return responseStandard(res, 'Failed to create user!', {}, 400, false)
+            }
           } else {
             return responseStandard(res, 'Failed to create user!', {}, 400, false)
           }
         } else {
-          return responseStandard(res, 'Failed to create user!', {}, 400, false)
+          return responseStandard(res, 'Phone has already used', {}, 400, false)
         }
       } else {
         return responseStandard(res, 'Email has already used', {}, 400, false)
@@ -92,6 +100,12 @@ module.exports = {
     }
   },
   updateUser: async (req, res) => {
+    if (req.fileValidationError) {
+      return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
+    }
+    const picture = `/uploads/${req.file.filename}`
+    console.log(picture)
+
     const { id } = req.data
     const { value: results, error } = schemaC.validate(req.body)
     if (error) {
@@ -100,34 +114,49 @@ module.exports = {
       const { roleId, name, email, password, phone, genderId, birthdate } = results
       const isExist = await usersModel.checkEmailModel({ email })
       console.log(isExist)
-      if (isExist[0].id === parseInt(id)) {
+      let existEmail = 0
+      if (isExist.length) {
+        existEmail = isExist[0].id
+      }
+      if (existEmail === parseInt(id) || !isExist.length) {
         if (results === isExist[0]) {
           return responseStandard(res, 'There is no change', {}, 304, false)
         } else {
-          const salt = await bcrypt.genSalt(10)
-          const hashedPassword = await bcrypt.hash(password, salt)
-          const users = {
-            role_id: roleId,
-            email: email,
-            password: hashedPassword
+          const isExist = await usersModel.checkPhoneModel({ phone })
+          let existPhone = 0
+          if (isExist.length) {
+            existPhone = isExist[0].user_id
           }
-          const updateUser = await usersModel.updateUserModel([users, id])
-          if (updateUser.affectedRows) {
-            const detail = {
-              user_id: id,
-              name: name,
-              phone: phone,
-              gender_id: genderId,
-              birthdate: birthdate
+          console.log(isExist, existPhone, id)
+          if (existPhone === parseInt(id) || !isExist.length) {
+            const salt = await bcrypt.genSalt(10)
+            const hashedPassword = await bcrypt.hash(password, salt)
+            const users = {
+              role_id: roleId,
+              email: email,
+              password: hashedPassword
             }
-            const updateDetail = await usersModel.updateDetailModel([detail, id])
-            if (updateDetail.affectedRows) {
-              return responseStandard(res, 'Success! User has been updated!')
+            const updateUser = await usersModel.updateUserModel([users, id])
+            if (updateUser.affectedRows) {
+              const detail = {
+                user_id: id,
+                name: name,
+                picture: picture,
+                phone: phone,
+                gender_id: genderId,
+                birthdate: birthdate
+              }
+              const updateDetail = await usersModel.updateDetailModel([detail, id])
+              if (updateDetail.affectedRows) {
+                return responseStandard(res, 'Success! User has been updated!')
+              } else {
+                return responseStandard(res, 'Failed to update user!', {}, 400, false)
+              }
             } else {
               return responseStandard(res, 'Failed to update user!', {}, 400, false)
             }
           } else {
-            return responseStandard(res, 'Failed to update user!', {}, 400, false)
+            return responseStandard(res, 'Phone number has already used', {}, 400, false)
           }
         }
       } else {
