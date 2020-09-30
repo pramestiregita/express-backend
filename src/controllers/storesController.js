@@ -6,21 +6,17 @@ const bcrypt = require('bcrypt')
 
 module.exports = {
   createStore: async (req, res) => {
-    if (req.fileValidationError) {
-      return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
-    }
-    const picture = `/uploads/${req.file.filename}`
     const { value: results, error } = schemaS.validate(req.body)
     if (error) {
       return responseStandard(res, 'Error', { error: error.message }, 500, false)
     } else {
-      const { roleId, name, storeName, email, password, phone, genderId, birthdate, description } = results
+      const { name, email, phone, storeName, password } = results
       const isExist = await usersModel.checkEmailModel({ email })
       if (!isExist.length) {
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
         const users = {
-          role_id: roleId,
+          role_id: 2,
           email: email,
           password: hashedPassword
         }
@@ -29,24 +25,22 @@ module.exports = {
           const detail = {
             user_id: createUser.insertId,
             name: name,
-            picture: picture,
-            phone: phone,
-            gender_id: genderId,
-            birthdate: birthdate
+            phone: phone
           }
           const createDetail = await usersModel.createDetailModel(detail)
           if (createDetail.affectedRows) {
             const store = {
               user_id: createUser.insertId,
-              name: storeName,
-              description: description
+              name: storeName
             }
             const createStore = await storesModels.createModel(store)
             if (createStore.affectedRows) {
               const data = {
-                ...users,
-                ...detail,
-                ...store,
+                user_id: createUser.insertId,
+                email: email,
+                name: name,
+                phone: phone,
+                store_name: storeName,
                 password: null
               }
               return responseStandard(res, 'Success! User has been created!', { data: data })
