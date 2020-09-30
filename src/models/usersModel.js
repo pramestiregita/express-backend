@@ -73,7 +73,7 @@ module.exports = {
     const results = model(query, data)
     return results
   },
-  updateDetailPartialModel: (arr, data = {}) => { // update detail (name, picture, phone, gender_id, birthdate)
+  updateDetailPartialModel: (arr, data = []) => { // update detail (name, picture, phone, gender_id, birthdate)
     const query = `UPDATE ${tableDetail} SET ${arr} WHERE user_id=?`
     const results = model(query, data)
     return results

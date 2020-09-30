@@ -20,7 +20,7 @@ module.exports = {
     return results
   },
   createPictModel: (data = []) => {
-    const query = `INSERT INTO ${tablePict} (product_id, image) VALUES (?, ?), (?, ?), (?, ?), (?, ?)`
+    const query = `INSERT INTO ${tablePict} (color_id, image) VALUES (?, ?), (?, ?), (?, ?), (?, ?)`
     const results = model(query, data)
     return results
   },

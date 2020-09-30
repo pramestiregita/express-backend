@@ -4,6 +4,7 @@ const { productSchema: schema, colorSchema: schemaC, colorUpdateSchema: schemaCU
 const searching = require('../helpers/search')
 const sorting = require('../helpers/sort')
 const paging = require('../helpers/pagination')
+const upload = require('../helpers/upload')
 
 module.exports = {
   create: async (req, res) => {
@@ -34,52 +35,53 @@ module.exports = {
     }
   },
   createColor: async (req, res) => {
-    if (req.fileValidationError) {
-      return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
-    }
-    const { value: results, error } = schemaC.validate(req.body)
-    if (error) {
-      return responseStandard(res, 'Error', { error: error.message }, 400, false)
-    } else {
-      const { productId, colorName, hexcode, quantity } = results
-      const color = {
-        product_id: productId,
-        name: colorName,
-        hexcode,
-        quantity
+    upload(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return responseStandard(res, 'Error', { error: err.message }, 500, false)
+      } else if (err) {
+        return responseStandard(res, 'Error', { error: err.message }, 500, false)
       }
-      const createColor = await productsModel.createColorModel(color)
-      if (createColor.affectedRows) {
-        const picture = req.files.map(data => {
-          return data.path.replace(/\\/g, '/')
-        })
-        // console.log(picture)
-        const pict1 = picture[0]
-        const pict2 = picture[1]
-        const pict3 = picture[2]
-        const pict4 = picture[3]
-        const id = createColor.insertId
-        const createPict = await productsModel.createPictModel([id, pict1, id, pict2, id, pict3, id, pict4])
-        if (createPict.affectedRows) {
-          const data = {
-            ...color,
-            product_id: productId,
-            color_id: id,
-            image: {
-              pict1,
-              pict2,
-              pict3,
-              pict4
+      const { value: results, error } = schemaC.validate(req.body)
+      if (error) {
+        return responseStandard(res, 'Error', { error: error.message }, 400, false)
+      } else {
+        const { productId, colorName, hexcode, quantity } = results
+        const color = {
+          product_id: productId,
+          name: colorName,
+          hexcode,
+          quantity
+        }
+        const createColor = await productsModel.createColorModel(color)
+        if (createColor.affectedRows) {
+          const id = createColor.insertId
+          const picture = req.files.map(data => {
+            return (id, data)
+          })
+          console.log(picture)
+          // const pict1 = picture[0]
+          // const pict2 = picture[1]
+          // const pict3 = picture[2]
+          // const pict4 = picture[3]
+          const createPict = await productsModel.createPictModel([picture])
+          if (createPict.affectedRows) {
+            const data = {
+              ...color,
+              product_id: productId,
+              color_id: id,
+              image: {
+                ...picture
+              }
             }
+            return responseStandard(res, 'Product color has been created', { data: data })
+          } else {
+            return responseStandard(res, 'Failed to create product color', {}, 400, false)
           }
-          return responseStandard(res, 'Product color has been created', { data: data })
         } else {
           return responseStandard(res, 'Failed to create product color', {}, 400, false)
         }
-      } else {
-        return responseStandard(res, 'Failed to create product color', {}, 400, false)
       }
-    }
+    })
   },
   getProducts: async (req, res) => {
     const { searchKey, searchValue } = searching.name(req.query.search)

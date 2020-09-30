@@ -22,10 +22,9 @@ const upload = multer({
   limits: size,
   fileFilter: (req, file, cb) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      req.fileValidationError = 'Only image files are allowed!'
-      return cb(null, false)
+      return cb(new Error('Only image files with extension jpeg/jpg/png are allowed!'), false)
     }
-    cb(null, true)
+    return cb(null, true)
   }
 })
 

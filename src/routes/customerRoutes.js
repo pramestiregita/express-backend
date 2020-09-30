@@ -4,14 +4,12 @@ const productController = require('../controllers/productController')
 const usersController = require('../controllers/usersController')
 const cartsController = require('../controllers/cartsController')
 const usersAddressController = require('../controllers/usersAddressController')
-const upload = require('../helpers/upload')
 
 // user detail
 router.get('/detail', usersController.getDetailUser) // show user detail
-router.put('/edit', upload.single('picture'), usersController.updateUser) // edit user detail
+router.put('/edit', usersController.updateUser) // edit user detail
 router.patch('/edit', usersController.updateUserPartial) // edit user email & password
 router.patch('/edit/detail', usersController.updateDetailPartial) // edit user detail
-router.patch('/edit/profile_picture', upload.single('picture'), usersController.updatePicture) // edit user profile_picture
 router.delete('/delete', usersController.deleteUser) // delete user
 
 // user address

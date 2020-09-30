@@ -11,8 +11,6 @@ router.post('/login/seller', authSellerController) // seller
 router.post('/login/customer', authCustController) // customer
 
 // register
-// router.post('/register/seller', upload.single('picture'), storesController.createStore) // seller
-// router.post('/register/customer', upload.single('picture'), usersController.create) // customer
 router.post('/register/seller', storesController.createStore) // seller
 router.post('/register/customer', usersController.create) // customer
 

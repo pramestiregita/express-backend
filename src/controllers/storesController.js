@@ -1,4 +1,4 @@
-const storesModels = require('../models/storesModels')
+const storeModel = require('../models/storesModels')
 const usersModel = require('../models/usersModel')
 const responseStandard = require('../helpers/response')
 const { sellerSchema: schemaS } = require('../helpers/validation')
@@ -33,7 +33,7 @@ module.exports = {
               user_id: createUser.insertId,
               name: storeName
             }
-            const createStore = await storesModels.createModel(store)
+            const createStore = await storeModel.createModel(store)
             if (createStore.affectedRows) {
               const data = {
                 user_id: createUser.insertId,
@@ -41,7 +41,7 @@ module.exports = {
                 name: name,
                 phone: phone,
                 store_name: storeName,
-                password: null
+                password: undefined
               }
               return responseStandard(res, 'Success! User has been created!', { data: data })
             } else {
@@ -58,10 +58,20 @@ module.exports = {
       }
     }
   },
+  getDetailStore: async (req, res) => {
+    const { id } = req.data
+
+    const detail = await storeModel.getModel({ user_id: id })
+    if (detail.length) {
+      return responseStandard(res, 'Detail of Store', { data: detail })
+    } else {
+      return responseStandard(res, 'Store not found', {}, 404, false)
+    }
+  },
   updateStore: async (req, res) => {
     const { id: idUser } = req.data
 
-    const update = await storesModels.updateModel([req.body, idUser])
+    const update = await storeModel.updateModel([req.body, idUser])
     if (update.affectedRows) {
       return responseStandard(res, 'Store Profile has been updated')
     } else {

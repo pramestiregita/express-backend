@@ -7,6 +7,11 @@ module.exports = {
     const results = model(query, data)
     return results
   },
+  getModel: (data = {}) => {
+    const query = `SELECT * FROM ${table} WHERE ?`
+    const results = model(query, data)
+    return results
+  },
   updateModel: (data = []) => {
     const query = `UPDATE ${table} SET ? WHERE ?`
     const results = model(query, data)

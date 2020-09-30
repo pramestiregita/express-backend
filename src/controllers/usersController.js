@@ -4,63 +4,10 @@ const searching = require('../helpers/search')
 const responseStandard = require('../helpers/response')
 const { custSchema: schemaC } = require('../helpers/validation')
 const bcrypt = require('bcrypt')
+const upload = require('../helpers/upload').single('picture')
+const multer = require('multer')
 
 module.exports = {
-  // create: async (req, res) => {
-  //   if (req.fileValidationError) {
-  //     return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
-  //   }
-  //   const picture = `/uploads/${req.file.filename}`
-  //   // console.log(picture)
-
-  //   const { value: results, error } = schemaC.validate(req.body)
-  //   if (error) {
-  //     return responseStandard(res, 'Error', { error: error.message }, 400, false)
-  //   } else {
-  //     const { roleId, name, email, password, phone, genderId, birthdate } = results
-  //     const isExist = await usersModel.checkEmailModel({ email })
-  //     if (!isExist.length) {
-  //       const isExist = await usersModel.checkPhoneModel({ phone })
-  //       if (!isExist.length) {
-  //         const salt = await bcrypt.genSalt(10)
-  //         const hashedPassword = await bcrypt.hash(password, salt)
-  //         const users = {
-  //           role_id: roleId,
-  //           email: email,
-  //           password: hashedPassword
-  //         }
-  //         const createUser = await usersModel.createUserModel(users)
-  //         if (createUser.affectedRows) {
-  //           const detail = {
-  //             user_id: createUser.insertId,
-  //             name: name,
-  //             picture: picture,
-  //             phone: phone,
-  //             gender_id: genderId,
-  //             birthdate: birthdate
-  //           }
-  //           const createDetail = await usersModel.createDetailModel(detail)
-  //           if (createDetail.affectedRows) {
-  //             const data = {
-  //               ...users,
-  //               ...detail,
-  //               password: null
-  //             }
-  //             return responseStandard(res, 'Success! User has been created!', { data: data })
-  //           } else {
-  //             return responseStandard(res, 'Failed to create user!', {}, 400, false)
-  //           }
-  //         } else {
-  //           return responseStandard(res, 'Failed to create user!', {}, 400, false)
-  //         }
-  //       } else {
-  //         return responseStandard(res, 'Phone has already used', {}, 400, false)
-  //       }
-  //     } else {
-  //       return responseStandard(res, 'Email has already used', {}, 400, false)
-  //     }
-  //   }
-  // },
   create: async (req, res) => {
     const { value: results, error } = schemaC.validate(req.body)
     if (error) {
@@ -88,7 +35,7 @@ module.exports = {
               user_id: createUser.insertId,
               name,
               email,
-              password: null
+              password: undefined
             }
             return responseStandard(res, 'Success! User has been created!', { data: data })
           } else {
@@ -114,7 +61,7 @@ module.exports = {
       const data = results.map(item => {
         item = {
           ...item,
-          password: null
+          password: undefined
         }
         return item
       })
@@ -127,12 +74,11 @@ module.exports = {
     const { id } = req.data
 
     const results = await usersModel.detailUserModel(id)
-    console.log(results)
     if (results.length) {
       const data = results.map(item => {
         item = {
           ...item,
-          password: null
+          password: undefined
         }
         return item
       })
@@ -142,69 +88,70 @@ module.exports = {
     }
   },
   updateUser: async (req, res) => {
-    if (req.fileValidationError) {
-      return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
-    }
-    const picture = `/uploads/${req.file.filename}`
-    console.log(picture)
-
-    const { id } = req.data
-    const { value: results, error } = schemaC.validate(req.body)
-    if (error) {
-      return responseStandard(res, 'Error', { error: error.message }, 400, false)
-    } else {
-      const { roleId, name, email, password, phone, genderId, birthdate } = results
-      const isExist = await usersModel.checkEmailModel({ email })
-      console.log(isExist)
-      let existEmail = 0
-      if (isExist.length) {
-        existEmail = isExist[0].id
+    upload(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return responseStandard(res, 'Error', { error: err.message }, 500, false)
+      } else if (err) {
+        return responseStandard(res, 'Error', { error: err.message }, 500, false)
       }
-      if (existEmail === parseInt(id) || !isExist.length) {
-        if (results === isExist[0]) {
-          return responseStandard(res, 'There is no change', {}, 304, false)
-        } else {
-          const isExist = await usersModel.checkPhoneModel({ phone })
-          let existPhone = 0
-          if (isExist.length) {
-            existPhone = isExist[0].user_id
-          }
-          console.log(isExist, existPhone, id)
-          if (existPhone === parseInt(id) || !isExist.length) {
-            const salt = await bcrypt.genSalt(10)
-            const hashedPassword = await bcrypt.hash(password, salt)
-            const users = {
-              role_id: roleId,
-              email: email,
-              password: hashedPassword
+
+      const { id } = req.data
+      const { value: results, error } = schemaC.validate(req.body)
+      if (error) {
+        return responseStandard(res, 'Error', { error: error.message }, 400, false)
+      } else {
+        const { roleId, name, email, password, phone, genderId, birthdate } = results
+        const isExist = await usersModel.checkEmailModel({ email })
+        let existEmail = 0
+        if (isExist.length) {
+          existEmail = isExist[0].id
+        }
+        if (existEmail === parseInt(id) || !isExist.length) {
+          if (results === isExist[0]) {
+            return responseStandard(res, 'There is no change', {}, 304, false)
+          } else {
+            const isExist = await usersModel.checkPhoneModel({ phone })
+            let existPhone = 0
+            if (isExist.length) {
+              existPhone = isExist[0].user_id
             }
-            const updateUser = await usersModel.updateUserModel([users, id])
-            if (updateUser.affectedRows) {
-              const detail = {
-                user_id: id,
-                name: name,
-                picture: picture,
-                phone: phone,
-                gender_id: genderId,
-                birthdate: birthdate
+            if (existPhone === parseInt(id) || !isExist.length) {
+              const salt = await bcrypt.genSalt(10)
+              const hashedPassword = await bcrypt.hash(password, salt)
+              const users = {
+                role_id: roleId,
+                email: email,
+                password: hashedPassword
               }
-              const updateDetail = await usersModel.updateDetailModel([detail, id])
-              if (updateDetail.affectedRows) {
-                return responseStandard(res, 'Success! User has been updated!')
+              const updateUser = await usersModel.updateUserModel([users, id])
+              if (updateUser.affectedRows) {
+                const picture = `/uploads/${req.file.filename}`
+                const detail = {
+                  user_id: id,
+                  name: name,
+                  picture: picture,
+                  phone: phone,
+                  gender_id: genderId,
+                  birthdate: birthdate
+                }
+                const updateDetail = await usersModel.updateDetailModel([detail, id])
+                if (updateDetail.affectedRows) {
+                  return responseStandard(res, 'Success! User has been updated!')
+                } else {
+                  return responseStandard(res, 'Failed to update user!', {}, 400, false)
+                }
               } else {
                 return responseStandard(res, 'Failed to update user!', {}, 400, false)
               }
             } else {
-              return responseStandard(res, 'Failed to update user!', {}, 400, false)
+              return responseStandard(res, 'Phone number has already used', {}, 400, false)
             }
-          } else {
-            return responseStandard(res, 'Phone number has already used', {}, 400, false)
           }
+        } else {
+          return responseStandard(res, 'Email has already used', {}, 400, false)
         }
-      } else {
-        return responseStandard(res, 'Email has already used', {}, 400, false)
       }
-    }
+    })
   },
   updateUserPartial: async (req, res) => {
     const { id } = req.data
@@ -242,62 +189,82 @@ module.exports = {
     }
   },
   updateDetailPartial: async (req, res) => {
-    const { id } = req.data
-    const { phone } = req.body
-    const data = Object.entries(req.body).map(item => {
-      if (item[0] === 'genderId') {
-        return `gender_id=${item[1]}`
-      } else if (item[0] === 'phone') {
-        return `${item[0]}=${item[1]}`
+    upload(req, res, async (err) => {
+      const { name, phone, genderId, birthdate } = req.body
+      if (name || phone || genderId || birthdate || req.file) {
+        if (err instanceof multer.MulterError) {
+          return responseStandard(res, 'Error', { error: err.message }, 500, false)
+        } else if (err) {
+          return responseStandard(res, 'Error', { error: err.message }, 500, false)
+        }
+        let upload = ''
+        if (req.file) {
+          const picture = `/uploads/${req.file.filename}`
+          upload += `picture='${picture}'`
+        }
+        const { id } = req.data
+        const data = Object.entries(req.body).map(item => {
+          if (item[0] === 'genderId') {
+            return `gender_id=${item[1]}`
+          } else if (item[0] === 'phone') {
+            return `${item[0]}=${item[1]}`
+          } else {
+            return `${item[0]}='${item[1]}'`
+          }
+        })
+        if (phone) {
+          const isExist = await usersModel.checkPhoneModel({ phone })
+          if (!isExist.length) {
+            const update = await usersModel.updateDetailPartialModel(data, id)
+            if (update.affectedRows) {
+              if (req.file) {
+                const updatePict = await usersModel.updateDetailPartialModel(upload, id)
+                if (updatePict.affectedRows) {
+                  return responseStandard(res, 'User detail updated successfully')
+                } else {
+                  return responseStandard(res, 'Failed to update user detail', {}, 500, false)
+                }
+              } else {
+                return responseStandard(res, 'User detail updated successfully')
+              }
+            } else {
+              return responseStandard(res, 'Failed to update user detail', {}, 500, false)
+            }
+          } else {
+            if (isExist[0].user_id === id) {
+              return responseStandard(res, 'Phone number doesn\'t change')
+            } else {
+              return responseStandard(res, 'Phone number already used', {}, 400, false)
+            }
+          }
+        } else if (req.file) {
+          const update = await usersModel.updateDetailPartialModel(upload, id)
+          if (update.affectedRows) {
+            return responseStandard(res, 'User profile picture updated successfully')
+          } else {
+            return responseStandard(res, 'Failed to update user profile picture', {}, 500, false)
+          }
+        } else {
+          const update = await usersModel.updateDetailPartialModel(data, id)
+          if (update.affectedRows) {
+            if (req.file) {
+              const updatePict = await usersModel.updateDetailPartialModel(upload, id)
+              if (updatePict.affectedRows) {
+                return responseStandard(res, 'User detail updated successfully')
+              } else {
+                return responseStandard(res, 'Failed to update user detail', {}, 500, false)
+              }
+            } else {
+              return responseStandard(res, 'User detail updated successfully')
+            }
+          } else {
+            return responseStandard(res, 'Failed to update user detail', {}, 500, false)
+          }
+        }
       } else {
-        return `${item[0]}='${item[1]}'`
+        return responseStandard(res, 'Please insert valid value', {}, 400, false)
       }
     })
-    console.log(data)
-    if (phone) {
-      const isExist = await usersModel.checkPhoneModel({ phone })
-      if (!isExist.length) {
-        const update = await usersModel.updateDetailPartialModel(data, id)
-        if (update.affectedRows) {
-          return responseStandard(res, 'User detail updated successfully')
-        } else {
-          return responseStandard(res, 'Failed to update user detail', {}, 500, false)
-        }
-      } else {
-        if (isExist[0].user_id === id) {
-          return responseStandard(res, 'Phone number doesn\'t change')
-        } else {
-          return responseStandard(res, 'Phone number already used', {}, 400, false)
-        }
-      }
-    } else {
-      const update = await usersModel.updateDetailPartialModel(data, id)
-      if (update.affectedRows) {
-        return responseStandard(res, 'User detail updated successfully')
-      } else {
-        return responseStandard(res, 'Failed to update user detail', {}, 500, false)
-      }
-    }
-  },
-  updatePicture: async (req, res) => {
-    const { id } = req.data
-    if (req.fileValidationError) {
-      return responseStandard(res, 'Error', { error: req.fileValidationError }, 500, false)
-    }
-    if (!req.file) {
-      return responseStandard(res, 'There is no selected file')
-    } else {
-      const picture = `/uploads/${req.file.filename}`
-      console.log(req.file)
-      const upload = `picture='${picture}'`
-      console.log(upload)
-      const update = await usersModel.updateDetailPartialModel(upload, id)
-      if (update.affectedRows) {
-        return responseStandard(res, 'User profile picture updated successfully')
-      } else {
-        return responseStandard(res, 'Failed to update user profile picture', {}, 500, false)
-      }
-    }
   },
   deleteUser: async (req, res) => {
     const { id } = req.data
@@ -347,19 +314,23 @@ module.exports = {
     }
   },
   createAdmin: async (req, res) => {
-    const { roleId, email, password } = req.body
-    if (roleId && email && password) {
+    const { email, password } = req.body
+    if (email && password) {
       const isExist = await usersModel.checkEmailModel({ email })
       if (!isExist.length) {
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
-        const users = {
-          role_id: roleId,
+        let users = {
+          role_id: 1,
           email: email,
           password: hashedPassword
         }
         const createUser = await usersModel.createUserModel(users)
         if (createUser.affectedRows) {
+          users = {
+            ...users,
+            password: null
+          }
           return responseStandard(res, 'Success! Admin User has been created!', { data: users })
         } else {
           return responseStandard(res, 'Failed to create user!', {}, 400, false)
