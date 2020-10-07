@@ -21,24 +21,34 @@ module.exports = {
   getCategories: async (req, res) => {
     const { searchKey, searchValue } = searching.name(req.query.search)
     const { sortKey, sortBy } = sorting.name(req.query.sort)
-    const count = await categoriesModel.countModel()
+    const count = await categoriesModel.countModel([searchKey, searchValue, sortKey, sortBy])
     const page = paging(req, count[0].count)
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo
 
     const results = await categoriesModel.getModel([searchKey, searchValue, sortKey, sortBy], [limit, offset])
     if (results.length) {
-      return responseStandard(res, 'List of Category', { results, pageInfo })
+      return responseStandard(res, 'List of Category', { data: results, pageInfo })
     } else {
       return responseStandard(res, 'There is no item in list', {}, 404, false)
     }
   },
   detailCategory: async (req, res) => {
     const { id } = req.params
+    const { searchKey, searchValue } = searching.name(req.query.search)
+    const { sortKey, sortBy } = sorting.name(req.query.sort)
+    const count = await categoriesModel.countDetailModel([searchKey, searchValue, sortKey, sortBy], id)
+    const page = paging(req, count[0].count)
+    const { offset, pageInfo } = page
+    const { limitData: limit } = pageInfo
+    console.log(limit)
 
-    const results = await categoriesModel.detailModel(id)
+    const results = await categoriesModel.detailModel([searchKey, searchValue, sortKey, sortBy], [id, limit, offset])
     if (results.length) {
-      responseStandard(res, `Category with id ${id}`, { results })
+      // const data = {
+      //   category_id:
+      // }
+      responseStandard(res, `Category with id ${id}`, { results, pageInfo })
     } else {
       responseStandard(res, `Category with id ${id} is not found`, {}, 404, false)
     }

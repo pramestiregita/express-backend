@@ -4,12 +4,13 @@ const productController = require('../controllers/productController')
 const usersController = require('../controllers/usersController')
 const cartsController = require('../controllers/cartsController')
 const usersAddressController = require('../controllers/usersAddressController')
+const productRatingController = require('../controllers/productRatingController')
+const transactionController = require('../controllers/transactionController')
 
 // user detail
 router.get('/detail', usersController.getDetailUser) // show user detail
 router.put('/edit', usersController.updateUser) // edit user detail
-router.patch('/edit', usersController.updateUserPartial) // edit user email & password
-router.patch('/edit/detail', usersController.updateDetailPartial) // edit user detail
+router.patch('/edit', usersController.updatePartial) // edit user email & password
 router.delete('/delete', usersController.deleteUser) // delete user
 
 // user address
@@ -33,5 +34,13 @@ router.post('/cart', cartsController.create) // add cart
 router.get('/cart', cartsController.getAll) // show cart
 router.put('/cart/:id', cartsController.editCart) // edit cart
 router.delete('/cart/:id', cartsController.deleteCart) // delete cart
+
+// product ratings
+router.post('/give-rating/:id', productRatingController.create) // give rating
+
+// checkout
+router.post('/checkout', transactionController.create)
+router.get('/my-order', transactionController.get)
+router.get('/my-order/:id', transactionController.detail)
 
 module.exports = router

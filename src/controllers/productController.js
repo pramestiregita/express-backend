@@ -4,7 +4,8 @@ const { productSchema: schema, colorSchema: schemaC, colorUpdateSchema: schemaCU
 const searching = require('../helpers/search')
 const sorting = require('../helpers/sort')
 const paging = require('../helpers/pagination')
-const upload = require('../helpers/upload')
+const upload = require('../helpers/upload').array('picture')
+const multer = require('multer')
 
 module.exports = {
   create: async (req, res) => {
@@ -37,9 +38,9 @@ module.exports = {
   createColor: async (req, res) => {
     upload(req, res, async (err) => {
       if (err instanceof multer.MulterError) {
-        return responseStandard(res, 'Error', { error: err.message }, 500, false)
+        return responseStandard(res, err.message, {}, 500, false)
       } else if (err) {
-        return responseStandard(res, 'Error', { error: err.message }, 500, false)
+        return responseStandard(res, err.message, {}, 500, false)
       }
       const { value: results, error } = schemaC.validate(req.body)
       if (error) {
@@ -56,22 +57,23 @@ module.exports = {
         if (createColor.affectedRows) {
           const id = createColor.insertId
           const picture = req.files.map(data => {
-            return (id, data)
+            const pict = {
+              color_id: id,
+              image: `/uploads/${data.filename}`
+            }
+            return pict
           })
-          console.log(picture)
-          // const pict1 = picture[0]
-          // const pict2 = picture[1]
-          // const pict3 = picture[2]
-          // const pict4 = picture[3]
-          const createPict = await productsModel.createPictModel([picture])
-          if (createPict.affectedRows) {
+          const createPict = picture.map(async item => {
+            const create = await productsModel.createPictModel(item)
+            return create
+          })
+          const createdPict = await Promise.all(createPict)
+          if (createdPict[0].affectedRows) {
             const data = {
               ...color,
               product_id: productId,
               color_id: id,
-              image: {
-                ...picture
-              }
+              image: picture
             }
             return responseStandard(res, 'Product color has been created', { data: data })
           } else {
@@ -93,7 +95,7 @@ module.exports = {
 
     const results = await productsModel.getModel([searchKey, searchValue, sortKey, sortBy], [limit, offset])
     if (results.length) {
-      return responseStandard(res, 'List of Products', { results, pageInfo })
+      return responseStandard(res, 'List of Products', { data: results, pageInfo })
     } else {
       return responseStandard(res, 'There is no data in list', {}, 404, false)
     }
@@ -137,55 +139,63 @@ module.exports = {
     }
   },
   updateColorProduct: async (req, res) => {
-    const { id } = req.params
+    upload(req, res, async (err) => {
+      if (err instanceof multer.MulterError) {
+        return responseStandard(res, err.message, {}, 500, false)
+      } else if (err) {
+        return responseStandard(res, err.message, {}, 500, false)
+      }
+      const { id } = req.params
 
-    const { value: results, error } = schemaCU.validate(req.body)
-    if (error) {
-      return responseStandard(res, 'Error', { error: error.message }, 400, false)
-    } else {
-      const isExist = await productsModel.detailModel(id)
-      if (isExist.length > 0) {
-        const { colorName, hexcode, quantity } = results
-        const color = {
-          name: colorName,
-          hexcode,
-          quantity
-        }
-        const updateColor = await productsModel.updateColorModel([color, id])
-        if (updateColor.affectedRows) {
-          const picture = req.files.map(data => {
-            return data.path.replace(/\\/g, '/')
-          })
-          // console.log(picture)
-          const pict1 = picture[0]
-          const pict2 = picture[1]
-          const pict3 = picture[2]
-          const pict4 = picture[3]
-          const idColor = req.body.colorId
-          const createPict = await productsModel.updatePictModel([pict1, pict2, pict3, pict4, idColor])
-          if (createPict.affectedRows) {
-            const data = {
-              ...results,
-              product_id: id,
-              color_id: idColor,
-              image: {
-                pict1,
-                pict2,
-                pict3,
-                pict4
+      const { value: results, error } = schemaCU.validate(req.body)
+      if (error) {
+        return responseStandard(res, 'Error', { error: error.message }, 400, false)
+      } else {
+        const isExist = await productsModel.detailModel(id)
+        if (isExist.length > 0) {
+          const { colorName, hexcode, quantity } = results
+          const color = {
+            name: colorName,
+            hexcode,
+            quantity
+          }
+          const updateColor = await productsModel.updateColorModel([color, id])
+          if (updateColor.affectedRows) {
+            let path = []
+            const picture = req.files.map(data => {
+              const pict = {
+                color_id: req.body.colorId,
+                image: `/uploads/${data.filename}`
               }
+              path = `/uploads/${data.filename}`
+              return pict
+            })
+            console.log(picture)
+            const updatePict = picture.map(async item => {
+              const update = await productsModel.updatePictModel([item, req.body.colorId])
+              return update
+            })
+            const updatedPict = await Promise.all(updatePict)
+            console.log(updatedPict)
+            if (updatedPict[0].affectedRows) {
+              const data = {
+                ...results,
+                product_id: id,
+                color_id: req.body.colorId,
+                image: picture
+              }
+              return responseStandard(res, 'Product color has been created', { data: data })
+            } else {
+              return responseStandard(res, 'Failed to create product color', {}, 400, false)
             }
-            return responseStandard(res, 'Product color has been created', { data: data })
           } else {
-            return responseStandard(res, 'Failed to create product color', {}, 400, false)
+            responseStandard(res, 'Failed to update!', {}, 304, false)
           }
         } else {
-          responseStandard(res, 'Failed to update!', {}, 304, false)
+          responseStandard(res, `Product with id ${id} is not found`, {}, 404, false)
         }
-      } else {
-        responseStandard(res, `Product with id ${id} is not found`, {}, 404, false)
       }
-    }
+    })
   },
   deleteProduct: async (req, res) => {
     const { id } = req.params
@@ -206,7 +216,7 @@ module.exports = {
     const { id } = req.data
     const { searchKey, searchValue } = searching.name(req.query.search)
     const { sortKey, sortBy } = sorting.name(req.query.sort)
-    const count = await productsModel.countModel()
+    const count = await productsModel.countModel([searchKey, searchValue, sortKey, sortBy], id)
     const page = paging(req, count[0].count)
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo

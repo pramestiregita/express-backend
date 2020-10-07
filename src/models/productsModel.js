@@ -3,10 +3,11 @@ const tableColor = 'products_colors'
 const tablePict = 'products_images'
 const tableCond = 'conditions'
 const tableCat = 'categories'
+const tableRating = 'products_ratings'
 const model = require('../helpers/model')
 
-const column = `${table}.id, ${table}.seller_id, ${table}.name, ${table}.price, ${table}.description, ${tableCond}.name AS product_condition, ${tableCat}.name AS category, ${tableColor}.name AS color, ${tableColor}.quantity, ${table}.created_at, ${table}.updated_at`
-const join = `LEFT JOIN ${tableCond} ON ${tableCond}.id=${table}.condition_id LEFT JOIN ${tableCat} ON ${tableCat}.id=${table}.category_id LEFT JOIN ${tableColor} ON ${tableColor}.product_id=${table}.id`
+const column = `${table}.id, ${table}.seller_id, ${table}.name, ${table}.price, ${table}.description, ${tableCond}.name AS product_condition, ${tableCat}.name AS category, ${tableColor}.name AS color, ${tableColor}.quantity, AVG(${tableRating}.rating) AS rating, ${table}.created_at, ${table}.updated_at`
+const join = `LEFT JOIN ${tableCond} ON ${tableCond}.id=${table}.condition_id LEFT JOIN ${tableCat} ON ${tableCat}.id=${table}.category_id LEFT JOIN ${tableColor} ON ${tableColor}.product_id=${table}.id LEFT JOIN ${tableRating} ON ${tableRating}.product_id=${table}.id`
 
 module.exports = {
   createModel: (data = {}) => {
@@ -20,7 +21,7 @@ module.exports = {
     return results
   },
   createPictModel: (data = []) => {
-    const query = `INSERT INTO ${tablePict} (color_id, image) VALUES (?, ?), (?, ?), (?, ?), (?, ?)`
+    const query = `INSERT INTO ${tablePict} SET ?`
     const results = model(query, data)
     return results
   },
@@ -30,7 +31,7 @@ module.exports = {
     return results
   },
   getModel: (arr, data = []) => {
-    const query = `SELECT ${column} FROM ${table} ${join} WHERE products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
+    const query = `SELECT ${column} FROM ${table} ${join} WHERE products.${arr[0]} LIKE '%${arr[1]}%' GROUP BY ${table}.id ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
     const results = model(query, data)
     return results
   },
@@ -49,13 +50,18 @@ module.exports = {
     const results = model(query, data)
     return results
   },
-  // updatePictModel: (data = []) => {
-  //   const query = `UPDATE ${tablePict} SET (image) VALUES (?), (?), (?), (?) WHERE color_id=?`
-  //   const results = model(query, data)
-  //   return results
-  // },
+  updatePictModel: (data = []) => {
+    const query = `UPDATE ${tablePict} SET ? WHERE color_id=?`
+    const results = model(query, data)
+    return results
+  },
   deleteModel: (data = {}) => {
     const query = `DELETE FROM ${table} WHERE id = ?`
+    const results = model(query, data)
+    return results
+  },
+  countSellerModel: (arr, data = {}) => {
+    const query = `SELECT COUNT(*) as count FROM ${table} WHERE products.seller_id=? AND products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]}`
     const results = model(query, data)
     return results
   },

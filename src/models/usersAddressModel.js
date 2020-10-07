@@ -19,6 +19,11 @@ module.exports = {
     const results = model(query, data)
     return results
   },
+  getPrimaryModel: (data = {}) => {
+    const query = `SELECT ${column} FROM ${table} WHERE user_id=?`
+    const results = model(query, data)
+    return results
+  },
   detailModel: (data = []) => {
     const query = `SELECT * FROM ${table} WHERE user_id=? AND id=?`
     const results = model(query, data)

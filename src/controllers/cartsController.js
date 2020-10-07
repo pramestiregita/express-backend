@@ -2,8 +2,8 @@ const cartModel = require('../models/cartModel')
 const { cartSchema: schema } = require('../helpers/validation')
 const responseStandard = require('../helpers/response')
 const paging = require('../helpers/pagination')
-const searching = require('../helpers/search')
-const sorting = require('../helpers/sort')
+// const searching = require('../helpers/search')
+// const sorting = require('../helpers/sort')
 
 module.exports = {
   create: async (req, res) => {
@@ -33,16 +33,19 @@ module.exports = {
   getAll: async (req, res) => {
     const { id: userId } = req.data
 
-    const { searchKey, searchValue } = searching.name(req.query.search)
-    const { sortKey, sortBy } = sorting.name(req.query.sort)
+    // const { searchKey, searchValue } = searching.name(req.query.search)
+    // const { sortKey, sortBy } = sorting.name(req.query.sort)
     const count = await cartModel.countModel(userId)
     const page = paging(req, count[0].count)
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo
 
-    const results = await cartModel.getModel([searchKey, searchValue, sortKey, sortBy], [userId, limit, offset])
+    const results = await cartModel.getModel([userId, limit, offset])
     if (results.length) {
-      return responseStandard(res, 'My Cart', { results, pageInfo })
+      const summary = results.map(item => {
+        return item.total
+      }).reduce((a, b) => a + b, 0)
+      return responseStandard(res, 'My Cart', { results, summary, pageInfo })
     } else {
       return responseStandard(res, 'There is no product in cart', {}, 404, false)
     }
