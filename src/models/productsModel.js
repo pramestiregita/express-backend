@@ -32,7 +32,7 @@ module.exports = {
     return results
   },
   getModel: (arr, data = []) => {
-    const query = `SELECT ${column} FROM ${table} ${join} WHERE products.${arr[0]} LIKE '%${arr[1]}%' GROUP BY ${table}.id ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
+    const query = `SELECT ${column} FROM ${table} ${join} WHERE products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
     const results = model(query, data)
     return results
   },
