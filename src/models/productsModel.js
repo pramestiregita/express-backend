@@ -4,10 +4,11 @@ const tablePict = 'products_images'
 const tableCond = 'conditions'
 const tableCat = 'categories'
 const tableRating = 'products_ratings'
+const tableStore = 'stores'
 const model = require('../helpers/model')
 
-const column = `${table}.id, ${table}.seller_id, ${table}.name, ${table}.price, ${table}.description, ${tableCond}.name AS product_condition, ${tableCat}.name AS category, ${tableColor}.name AS color, ${tableColor}.quantity, AVG(${tableRating}.rating) AS rating, ${table}.created_at, ${table}.updated_at`
-const join = `LEFT JOIN ${tableCond} ON ${tableCond}.id=${table}.condition_id LEFT JOIN ${tableCat} ON ${tableCat}.id=${table}.category_id LEFT JOIN ${tableColor} ON ${tableColor}.product_id=${table}.id LEFT JOIN ${tableRating} ON ${tableRating}.product_id=${table}.id`
+const column = `${table}.id, ${table}.seller_id, ${table}.name, ${table}.price, ${table}.description, ${tableCond}.name AS product_condition, ${tableCat}.name AS category, ${tableColor}.name AS color, ${tablePict}.image, ${tableColor}.quantity, AVG(${tableRating}.rating) AS rating, ${tableStore}.name AS store, ${table}.created_at, ${table}.updated_at`
+const join = `LEFT JOIN ${tableCond} ON ${tableCond}.id=${table}.condition_id LEFT JOIN ${tableCat} ON ${tableCat}.id=${table}.category_id LEFT JOIN ${tableColor} ON ${tableColor}.product_id=${table}.id LEFT JOIN ${tableRating} ON ${tableRating}.product_id=${table}.id LEFT JOIN ${tableStore} ON ${tableStore}.user_id=${table}.seller_id LEFT JOIN ${tablePict} ON ${tablePict}.color_id=${tableColor}.id`
 
 module.exports = {
   createModel: (data = {}) => {

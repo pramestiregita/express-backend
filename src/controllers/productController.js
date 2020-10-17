@@ -59,7 +59,7 @@ module.exports = {
           const picture = req.files.map(data => {
             const pict = {
               color_id: id,
-              image: `/uploads/${data.filename}`
+              image: `uploads/${data.filename}`
             }
             return pict
           })
@@ -88,6 +88,7 @@ module.exports = {
   getProducts: async (req, res) => {
     const { searchKey, searchValue } = searching.name(req.query.search)
     const { sortKey, sortBy } = sorting.name(req.query.sort)
+    console.log(sortKey)
     const count = await productsModel.countModel([searchKey, searchValue, sortKey, sortBy])
     const page = paging(req, count[0].count)
     const { offset, pageInfo } = page
@@ -105,7 +106,7 @@ module.exports = {
 
     const results = await productsModel.detailModel(id)
     if (results.length) {
-      responseStandard(res, `Product with id ${id}`, { results })
+      responseStandard(res, `Product with id ${id}`, { data: results })
     } else {
       responseStandard(res, `Product with id ${id} is not found`, {}, 404, false)
     }
@@ -165,9 +166,9 @@ module.exports = {
             const picture = req.files.map(data => {
               const pict = {
                 color_id: req.body.colorId,
-                image: `/uploads/${data.filename}`
+                image: `uploads/${data.filename}`
               }
-              path = `/uploads/${data.filename}`
+              path = `uploads/${data.filename}`
               return pict
             })
             console.log(picture)

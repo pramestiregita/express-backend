@@ -2,7 +2,7 @@ const table = 'users'
 const tableDetail = 'user_details'
 const model = require('../helpers/model')
 
-const column = 'users.id, users.role_id, user_details.name, users.email, users.password, user_details.phone, gender.name AS gender, user_details.birthdate, user_details.picture AS profile_picture'
+const column = 'users.id, users.role_id, user_details.name, users.email, users.password, user_details.phone, user_details.gender_id, gender.name AS gender, user_details.birthdate, user_details.picture AS profile_picture'
 const join = 'INNER JOIN user_details ON user_details.user_id=users.id INNER JOIN gender ON gender.id=user_details.gender_id'
 
 // const column = 'users.id, user_details.name, users.email, users.password, user_details.phone, gender.name AS gender, user_details.birthdate, user_details.picture AS profile_picture'
@@ -44,6 +44,7 @@ module.exports = {
   },
   detailUserModel: (data = {}) => { // get detail user (id, role, email, password, name, picture, phone, gender_id, birthdate)
     const query = `SELECT ${column} FROM ${table} ${join} WHERE users.id=?`
+    console.log(query)
     const results = model(query, data)
     return results
   },
@@ -73,8 +74,8 @@ module.exports = {
     const results = model(query, data)
     return results
   },
-  updateDetailPartialModel: (data = []) => { // update detail (name, picture, phone, gender_id, birthdate)
-    const query = `UPDATE ${tableDetail} SET ? WHERE user_id=?`
+  updateDetailPartialModel: (arr, data = {}) => { // update detail (name, picture, phone, gender_id, birthdate)
+    const query = `UPDATE ${tableDetail} SET ${arr} WHERE user_id=?`
     const results = model(query, data)
     return results
   },

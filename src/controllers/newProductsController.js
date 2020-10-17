@@ -13,9 +13,9 @@ module.exports = {
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo
 
-    const results = await productsModel.getModel([searchKey, searchValue, 'created_at', 'DESC'], [limit, offset])
+    const results = await productsModel.getModel([searchKey, searchValue, 'created_at', 'DESC'], [15, offset])
     if (results.length) {
-      return responseStandard(res, 'List of Products', { results, pageInfo })
+      return responseStandard(res, 'List of Products', { data: results, pageInfo })
     } else {
       return responseStandard(res, 'There is no data in list', {}, 404, false)
     }
