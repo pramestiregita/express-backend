@@ -441,5 +441,41 @@ module.exports = {
     } else {
       return responseStandard(res, 'All fields must be filled!', {}, 400, false)
     }
+  },
+  updatePassword: async (req, res) => {
+    const { id } = req.data
+    const isExist = await usersModel.detailUserModel(id)
+    const { oldPassword, newPassword, confrimPassword } = req.body
+    // console.log(isExist)
+    if (isExist.length) {
+      const currentPassword = isExist[0].password
+      const oldPass = await bcrypt.compare(oldPassword, currentPassword)
+      console.log(oldPass)
+      if (oldPass === false) {
+        return responseStandard(res, 'Old password is wrong', {}, 400, false)
+      } else if (currentPassword === newPassword) {
+        return responseStandard(res, 'Password doesn\'t change', {}, 400, false)
+      } else {
+        const newPass = newPassword === confrimPassword
+        // console.log(newPassword, confrimPassword)
+        if (newPass === false) {
+          return responseStandard(res, 'New password doesn\'t match', {}, 400, false)
+        } else {
+          const salt = await bcrypt.genSalt(10)
+          const hashedPassword = await bcrypt.hash(newPassword, salt)
+          const data = {
+            password: hashedPassword
+          }
+          const update = await usersModel.updateUserPartialModel([data, id])
+          if (update.affectedRows) {
+            return responseStandard(res, 'Update succesfully')
+          } else {
+            return responseStandard(res, 'Failed to update', {}, 500, false)
+          }
+        }
+      }
+    } else {
+      return responseStandard(res, 'User not found', {}, 404, false)
+    }
   }
 }

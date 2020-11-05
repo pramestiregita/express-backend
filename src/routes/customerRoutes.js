@@ -11,7 +11,8 @@ const transactionController = require('../controllers/transactionController')
 router.get('/detail', usersController.getDetailUser) // show user detail
 router.put('/edit', usersController.updateUser) // edit user detail
 // router.patch('/edit', usersController.updatePartial) // edit user email & password
-router.patch('/edit', usersController.updateDetail) // edit user email & password
+router.patch('/edit', usersController.updateDetail) // edit user detail
+router.patch('/change-password', usersController.updatePassword) // edit user password
 router.patch('/edit/avatar', usersController.updatePict) // edit user email & password
 router.delete('/delete', usersController.deleteUser) // delete user
 

@@ -1,7 +1,7 @@
 const table = 'user_address'
 const model = require('../helpers/model')
 
-const column = 'id, name, recipient_name, recipient_phone, address, postal_code, city'
+const column = 'id, isPrimary, name, recipient_name, recipient_phone, address, postal_code, city'
 
 module.exports = {
   createModel: (data = []) => {
@@ -20,7 +20,7 @@ module.exports = {
     return results
   },
   getPrimaryModel: (data = {}) => {
-    const query = `SELECT ${column} FROM ${table} WHERE user_id=?`
+    const query = `SELECT ${column} FROM ${table} WHERE user_id=? AND isPrimary=1`
     const results = model(query, data)
     return results
   },

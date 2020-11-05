@@ -47,6 +47,9 @@ module.exports = {
       return responseStandard(res, 'You haven\'t add an address', {}, 404, false)
     }
   },
+  getPrimaryAddress: async (req, res) => {
+
+  },
   detailAddress: async (req, res) => {
     const { id: userId } = req.data
     const { id } = req.params
