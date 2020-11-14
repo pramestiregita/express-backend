@@ -7,8 +7,8 @@ const tableRating = 'products_ratings'
 const tableStore = 'stores'
 const model = require('../helpers/model')
 
-const column = `${table}.id, ${table}.seller_id, ${table}.name, ${table}.price, ${table}.description, ${tableCond}.name AS product_condition, ${tableCat}.name AS category, ${tableColor}.name AS color, ${tablePict}.image, ${tableColor}.quantity, AVG(${tableRating}.rating) AS rating, ${tableStore}.name AS store, ${table}.created_at, ${table}.updated_at`
-const join = `LEFT JOIN ${tableCond} ON ${tableCond}.id=${table}.condition_id LEFT JOIN ${tableCat} ON ${tableCat}.id=${table}.category_id LEFT JOIN ${tableColor} ON ${tableColor}.product_id=${table}.id LEFT JOIN ${tableRating} ON ${tableRating}.product_id=${table}.id LEFT JOIN ${tableStore} ON ${tableStore}.user_id=${table}.seller_id LEFT JOIN ${tablePict} ON ${tablePict}.color_id=${tableColor}.id`
+const column = `${table}.id, ${table}.seller_id, ${table}.name, ${table}.price, ${table}.description, ${tableCond}.name AS product_condition, ${tableCat}.name AS category, ${tableStore}.name AS store, ${tableColor}.name AS color, ${tablePict}.image, ${tableColor}.quantity, ${table}.created_at, ${table}.updated_at`
+const join = `INNER JOIN conditions ON conditions.id=products.condition_id INNER JOIN categories ON categories.id=products.category_id INNER JOIN products_colors ON products_colors.product_id=products.id INNER JOIN products_images ON products_images.color_id=products_colors.id INNER JOIN stores ON stores.user_id=products.seller_id`
 
 module.exports = {
   createModel: (data = {}) => {
@@ -32,7 +32,7 @@ module.exports = {
     return results
   },
   getModel: (arr, data = []) => {
-    const query = `SELECT ${column} FROM ${table} ${join} WHERE products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
+    const query = `SELECT ${column}, (SELECT AVG(rating) FROM products_ratings WHERE products_ratings.product_id=products.id) AS rating FROM ${table} ${join} WHERE products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
     const results = model(query, data)
     return results
   },
@@ -67,7 +67,7 @@ module.exports = {
     return results
   },
   getSellerModel: (arr, data = []) => {
-    const query = `SELECT ${column} FROM ${table} ${join} WHERE products.seller_id=? AND products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
+    const query = `SELECT ${column}, (SELECT AVG(rating) FROM products_ratings WHERE products_ratings.product_id=products.id) AS rating FROM ${table} ${join} WHERE products.seller_id=? AND products.${arr[0]} LIKE '%${arr[1]}%' ORDER BY ${arr[2]} ${arr[3]} LIMIT ? OFFSET ?`
     const results = model(query, data)
     return results
   },
