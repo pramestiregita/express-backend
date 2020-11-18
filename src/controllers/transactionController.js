@@ -8,39 +8,17 @@ const searching = require('../helpers/search')
 module.exports = {
   create: async (req, res) => {
     const { id: userId } = req.data
-    // transaction_id, user_id, product_name, price, quantity, total_price, delivery_fee, summary
     const cart = await cartModel.getAllModel(userId)
     if (cart.length) {
       const delivery = 10000
-      // let results = cart.map(item => {
-      //   item = {
-      //     transaction_id: 'SHOPID' + Date.now(),
-      //     seller_id: item.seller_id,
-      //     user_id: item.user_id,
-      //     product_name: item.name,
-      //     price: item.price,
-      //     quantity: item.quantity,
-      //     total_price: item.total,
-      //     delivery_fee: delivery
-      //   }
-      //   return item
-      // })
-      // const summary = results.map(item => {
-      //   return item.total_price
-      // }).reduce((a, b) => a + b + delivery)
-      // results = results.map(item => {
-      //   item = {
-      //     ...item,
-      //     summary: summary
-      //   }
-      //   return item
-      // })
       const results = cart.map(item => {
         item = {
           transaction_id: 'SHOPID' + Date.now(),
           seller_id: item.seller_id,
           user_id: item.user_id,
           product_name: item.name,
+          product_color: item.color,
+          product_image: item.image,
           price: item.price,
           quantity: item.quantity,
           total_price: item.total,

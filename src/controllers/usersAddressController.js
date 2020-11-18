@@ -48,7 +48,14 @@ module.exports = {
     }
   },
   getPrimaryAddress: async (req, res) => {
+    const { id: userId } = req.data
 
+    const results = await usersAddressModel.getPrimaryModel([userId])
+    if (results.length) {
+      return responseStandard(res, 'Detail address', { data: results })
+    } else {
+      return responseStandard(res, 'There is no data', {}, 404, false)
+    }
   },
   detailAddress: async (req, res) => {
     const { id: userId } = req.data

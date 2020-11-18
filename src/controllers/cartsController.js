@@ -40,7 +40,7 @@ module.exports = {
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo
 
-    const results = await cartModel.getModel([userId, limit, offset])
+    const results = await cartModel.getModel(['created_at', 'DESC'],[userId, limit, offset])
     if (results.length) {
       const summary = results.map(item => {
         return item.total

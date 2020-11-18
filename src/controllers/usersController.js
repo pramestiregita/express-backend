@@ -445,7 +445,7 @@ module.exports = {
   updatePassword: async (req, res) => {
     const { id } = req.data
     const isExist = await usersModel.detailUserModel(id)
-    const { oldPassword, newPassword, confrimPassword } = req.body
+    const { oldPassword, newPassword, confirmPassword } = req.body
     // console.log(isExist)
     if (isExist.length) {
       const currentPassword = isExist[0].password
@@ -456,8 +456,8 @@ module.exports = {
       } else if (currentPassword === newPassword) {
         return responseStandard(res, 'Password doesn\'t change', {}, 400, false)
       } else {
-        const newPass = newPassword === confrimPassword
-        // console.log(newPassword, confrimPassword)
+        const newPass = newPassword === confirmPassword
+        // console.log(newPassword, confirmPassword)
         if (newPass === false) {
           return responseStandard(res, 'New password doesn\'t match', {}, 400, false)
         } else {

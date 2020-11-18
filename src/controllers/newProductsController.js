@@ -13,7 +13,7 @@ module.exports = {
     const { offset, pageInfo } = page
     const { limitData: limit } = pageInfo
 
-    const results = await productsModel.getModel([searchKey, searchValue, 'created_at', 'DESC'], [15, offset])
+    const results = await productsModel.getModel([searchKey, searchValue, 'created_at', 'DESC'], [limit, offset])
     if (results.length) {
       return responseStandard(res, 'List of Products', { data: results, pageInfo })
     } else {

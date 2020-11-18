@@ -19,6 +19,7 @@ router.delete('/delete', usersController.deleteUser) // delete user
 // user address
 router.post('/my-address', usersAddressController.createAddress) // create user address
 router.get('/my-address', usersAddressController.getAllAddress) // show user address
+router.get('/primary-address', usersAddressController.getPrimaryAddress) // show user address
 router.get('/my-address/:id', usersAddressController.detailAddress) // show detail user address
 router.put('/my-address/:id', usersAddressController.updateAll) // update all detail user address
 router.patch('/my-address/:id', usersAddressController.updatePartial) // update partial detail user address
