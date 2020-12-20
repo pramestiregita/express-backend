@@ -46,7 +46,9 @@ module.exports = {
       if (error) {
         return responseStandard(res, 'Error', { error: error.message }, 400, false)
       } else {
-        const { productId, colorName, hexcode, quantity } = results
+        let { productId, colorName, hexcode, quantity } = results
+        colorName = colorName?colorName:'none'
+        hexcode = hexcode?hexcode:'none'
         const color = {
           product_id: productId,
           name: colorName,
