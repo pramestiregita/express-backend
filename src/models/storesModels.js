@@ -13,7 +13,7 @@ module.exports = {
     return results
   },
   updateModel: (data = []) => {
-    const query = `UPDATE ${table} SET ? WHERE ?`
+    const query = `UPDATE ${table} SET ? WHERE user_id=?`
     const results = model(query, data)
     return results
   }
