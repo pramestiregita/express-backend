@@ -71,7 +71,7 @@ module.exports = {
   updateStore: async (req, res) => {
     const { id: idUser } = req.data
 
-    const update = await storeModel.updateModel([req.body, idUser])
+    const update = await storeModel.updateModel([req.body, {user_id:idUser}])
     if (update.affectedRows) {
       return responseStandard(res, 'Store Profile has been updated')
     } else {
