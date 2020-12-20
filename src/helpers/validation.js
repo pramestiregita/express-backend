@@ -42,8 +42,8 @@ module.exports = {
   }),
   colorSchema: joi.object({
     productId: joi.number().required(),
-    colorName: joi.string().required().replace(/'/g, "\'").replace(/"/g, '\"'),
-    hexcode: joi.string().required(),
+    colorName: joi.string().replace(/'/g, "\'").replace(/"/g, '\"'),
+    hexcode: joi.string(),
     quantity: joi.number().required()
   }),
   colorUpdateSchema: joi.object({
